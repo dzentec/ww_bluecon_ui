@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — Confirm Device</title>
+<link rel="stylesheet" href="themes/default.css">
+<style>
+  /* Inline fallback copy of ../themes/default.css's :root variables.
+     The shared file stays the source of truth for future sketches; this
+     block only guards against preview contexts that can't resolve a
+     relative stylesheet link (e.g. a sandboxed/data-URL preview pane). */
+  :root {
+    --color-bg: #F4F5F7;
+    --color-surface: #FFFFFF;
+    --color-border: #E7E9EC;
+    --color-text: #1B2430;
+    --color-text-muted: rgba(27, 36, 48, 0.56);
+    --color-text-faint: rgba(27, 36, 48, 0.38);
+    --color-primary: #1B2430;
+    --color-primary-hover: #0F151D;
+    --color-accent: #3E7BFA;
+    --color-danger: #E5484D;
+    --color-success: #2FB344;
+    --color-locked: rgba(0, 0, 0, 0.38);
+    --color-danger-bg: #FDECEC;
+    --color-success-bg: #E9F8EC;
+    --color-accent-bg: #EAF1FF;
+    --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+    --text-display: 32px;
+    --text-heading: 20px;
+    --text-body: 15px;
+    --text-label: 13px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+    --radius-card: 20px;
+    --radius-sm: 12px;
+    --radius-pill: 999px;
+    --shadow-card: 0 16px 32px rgba(27, 36, 48, 0.06);
+    --shadow-card-sm: 0 6px 16px rgba(27, 36, 48, 0.05);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background: #DDE1E6;
+    color: var(--color-text);
+    padding-top: 52px;
+  }
+  button, select { font-family: var(--font-sans); }
+
+  /* ---------- Variant tab nav ---------- */
+  #variant-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
+    background: var(--color-primary);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 16px;
+    display: flex; gap: 8px; align-items: center;
+    overflow-x: auto;
+  }
+  .variant-tab {
+    appearance: none; border: 1px solid rgba(255,255,255,0.18);
+    background: transparent; color: rgba(255,255,255,0.72);
+    padding: 7px 14px; border-radius: var(--radius-pill);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    white-space: nowrap; transition: all 0.15s ease;
+  }
+  .variant-tab:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+  .variant-tab.active { background: #fff; color: var(--color-primary); border-color: #fff; }
+
+  .variant { display: none; padding: 40px 16px 80px; }
+  .variant.active { display: block; }
+
+  /* ---------- Phone frame ---------- */
+  .phone {
+    width: 375px; margin: 0 auto;
+    background: var(--color-bg);
+    border-radius: 36px;
+    box-shadow: 0 30px 60px rgba(10,14,20,0.35), 0 0 0 10px #15181d, 0 0 0 11px #2a2e35;
+    overflow: hidden;
+    min-height: 700px;
+    display: flex; flex-direction: column;
+    position: relative;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .phone.popping { opacity: 0; transform: scale(0.96); }
+  .status-ios {
+    height: 28px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px; font-size: 13px; font-weight: 600; color: var(--color-text); flex-shrink: 0;
+  }
+
+  /* ---------- App bar ---------- */
+  .appbar {
+    display: flex; align-items: center;
+    padding: 14px 16px 14px;
+    flex-shrink: 0;
+  }
+  .appbar-title { font-size: var(--text-heading); font-weight: 600; letter-spacing: -0.2px; }
+
+  /* ---------- Content ---------- */
+  .content { flex: 1; display: flex; flex-direction: column; padding: 8px 20px 24px; }
+
+  .state-pane { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; color: var(--color-text-muted); }
+  .state-pane.active { display: flex; }
+  .state-pane .msg { font-size: var(--text-body); font-weight: 500; color: var(--color-text); max-width: 260px; line-height: 1.5; }
+  .spinner {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 3px solid var(--color-border); border-top-color: var(--color-primary);
+    animation: spin 0.8s linear infinite; margin-bottom: 18px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .pane { display: none; flex: 1; flex-direction: column; }
+  .pane.active { display: flex; }
+
+  /* ---------- Buttons ---------- */
+  .btn-primary {
+    appearance: none; border: none; width: 100%;
+    background: var(--color-primary); color: #fff;
+    font-size: var(--text-body); font-weight: 600;
+    padding: 15px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: all 0.15s ease;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary .spinner { width: 16px; height: 16px; border-width: 2px; border-color: rgba(255,255,255,0.3); border-top-color: #fff; margin: 0; display: none; }
+  .btn-primary.loading .spinner { display: inline-block; }
+  .btn-primary.loading .btn-label { opacity: 0.85; }
+
+  .btn-outline {
+    appearance: none; width: 100%;
+    background: transparent; color: var(--color-primary);
+    border: 1.5px solid var(--color-primary);
+    font-size: var(--text-body); font-weight: 600;
+    padding: 14px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .btn-outline:hover { background: rgba(27,36,48,0.04); }
+
+  .btn-ghost {
+    appearance: none; background: transparent; border: none;
+    color: var(--color-text-muted); font-size: var(--text-label); font-weight: 500;
+    padding: 12px; cursor: pointer; text-align: center; width: 100%;
+    transition: color 0.15s ease;
+  }
+  .btn-ghost:hover { color: var(--color-text); }
+
+  .btn-pill-primary {
+    appearance: none; border: none; width: 100%;
+    background: var(--color-primary); color: #fff;
+    font-size: var(--text-body); font-weight: 600;
+    padding: 16px; border-radius: var(--radius-pill);
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .btn-pill-primary:hover { background: var(--color-primary-hover); }
+  .btn-pill-primary:active { transform: scale(0.98); }
+
+  .actions { margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 24px; }
+
+  /* ---------- Variant A: settled device (radar motif, at rest) ---------- */
+  .settled-hero { display: flex; flex-direction: column; align-items: center; padding: 32px 0 24px; }
+  .settled-badge {
+    position: relative; width: 92px; height: 92px; border-radius: 50%;
+    background: var(--color-primary); display: flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: 0 14px 28px rgba(27,36,48,0.26);
+  }
+  .settled-check {
+    position: absolute; right: -2px; bottom: -2px; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--color-success); display: flex; align-items: center; justify-content: center;
+    color: #fff; border: 3px solid var(--color-bg);
+  }
+  .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
+  .settled-name { font-size: var(--text-heading); font-weight: 600; margin-top: 18px; }
+  .settled-model-sub { font-size: var(--text-label); color: var(--color-text-faint); margin-top: 2px; }
+
+  .rssi-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; vertical-align: middle; }
+  .rssi-bars i { display: block; width: 3px; border-radius: 1px; background: var(--color-border); }
+  .rssi-bars i:nth-child(1) { height: 4px; }
+  .rssi-bars i:nth-child(2) { height: 7px; }
+  .rssi-bars i:nth-child(3) { height: 10px; }
+  .rssi-strong .rssi-bars i { background: var(--color-success); }
+
+  /* ---------- Variant A: unified device card (real product photo) ---------- */
+  .device-card {
+    position: relative;
+    background: var(--color-surface); border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card); overflow: hidden; margin-top: 28px;
+  }
+  .device-photo-wrap {
+    height: 186px; padding: 22px 22px 4px; overflow: hidden;
+    transition: height 0.4s cubic-bezier(.4,0,.2,1), padding 0.4s cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
+  }
+  .device-photo { display: block; width: 100%; height: 160px; object-fit: contain; }
+  .device-photo-badge {
+    position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--color-success); display: flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: 0 2px 6px rgba(27,36,48,0.18);
+  }
+  .device-card-body { padding: 4px 20px 20px; transition: padding-top 0.4s cubic-bezier(.4,0,.2,1); }
+  .device-card-name { font-size: var(--text-heading); font-weight: 600; text-align: center; margin-bottom: 14px; }
+
+  /* ---------- Variant E: confirm, then reveal Log In in place ---------- */
+  /* The checkmark badge (.device-photo-badge) is NOT touched by .confirmed — it's one
+     fixed element in one fixed spot (card's top-right corner) for the whole interaction,
+     never faded/rescaled/relocated. Only the photo collapses under it. */
+  .device-card.confirmed .device-photo-wrap { height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; }
+  .device-card.confirmed .device-card-body { padding-top: 20px; }
+  .reveal {
+    max-height: 0; opacity: 0; overflow: hidden; margin-top: 0;
+    transition: max-height 0.45s cubic-bezier(.4,0,.2,1), opacity 0.35s ease 0.08s, margin-top 0.45s cubic-bezier(.4,0,.2,1);
+  }
+  .reveal.open { max-height: 340px; opacity: 1; margin-top: 18px; }
+  .btn-label { display: inline-block; transition: opacity 0.18s ease; }
+
+  /* ---------- Variant B: spec card (ReadOnlyInfoRow pattern, reused from System Info) ---------- */
+  .spec-card {
+    background: var(--color-surface); border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card-sm); padding: 20px; margin-top: 18px;
+  }
+  .spec-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .spec-icon {
+    width: 44px; height: 44px; border-radius: 12px; background: #EEF0F2;
+    display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); flex-shrink: 0;
+  }
+  .spec-role-badge { font-size: 11px; font-weight: 600; color: var(--color-accent); background: var(--color-accent-bg); padding: 3px 9px; border-radius: var(--radius-pill); display: inline-block; }
+  .info-row { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--color-border); gap: 12px; }
+  .info-row:first-of-type { border-top: none; }
+  .info-label { font-size: var(--text-label); color: var(--color-text-muted); flex-shrink: 0; }
+  .info-value { font-size: var(--text-body); font-weight: 500; color: var(--color-text); text-align: right; }
+
+  /* ---------- Variant C: contact-card / pill (consumer-polish reference) ---------- */
+  .contact-card {
+    background: var(--color-surface); border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card); padding: 22px; margin-top: 18px;
+  }
+  .contact-top { display: flex; align-items: center; gap: 14px; }
+  .contact-icon {
+    width: 52px; height: 52px; border-radius: 50%; background: var(--color-primary);
+    display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0;
+  }
+  .contact-name { font-size: var(--text-heading); font-weight: 600; }
+  .contact-sub { font-size: 12px; color: var(--color-text-faint); margin-top: 2px; }
+  .contact-divider { height: 1px; background: var(--color-border); margin: 18px 0; }
+  .contact-serial-label { font-size: 11px; text-transform: none; color: var(--color-text-faint); }
+  .contact-serial-value { font-size: var(--text-body); font-weight: 500; margin-top: 3px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- Dev state switcher (outside phone) ---------- */
+  .dev-strip {
+    width: 375px; margin: 14px auto 0; padding: 8px 10px;
+    border: 1px dashed rgba(27,36,48,0.28); border-radius: 10px;
+    background: rgba(255,255,255,0.5);
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  .dev-strip span { font-size: 10px; color: var(--color-text-faint); margin-right: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .dev-btn {
+    appearance: none; border: 1px solid var(--color-border); background: #fff;
+    border-radius: 999px; padding: 4px 10px; font-size: 11px; color: var(--color-text-muted);
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .dev-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .dev-btn.current { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+  /* ---------- Toast ---------- */
+  /* ---------- Variant D: combined with Log In (exploratory) ---------- */
+  .login-divider-label {
+    font-size: var(--text-label); color: var(--color-text-faint); font-weight: 500;
+    margin: 4px 0 14px; padding-top: 14px; border-top: 1px solid var(--color-border);
+  }
+  .field-group { margin-bottom: 12px; }
+  .field-label { font-size: 12px; color: var(--color-text-muted); margin-bottom: 6px; display: block; }
+  .field-input-wrap { position: relative; }
+  .field-input {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm); font-size: var(--text-body); color: var(--color-text);
+    background: var(--color-surface); transition: border-color 0.15s ease; font-family: var(--font-sans);
+  }
+  .field-input:focus { outline: none; border-color: var(--color-accent); }
+  .field-eye {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: var(--color-text-faint); padding: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .field-eye:hover { color: var(--color-text-muted); }
+
+  .toast {
+    position: absolute; left: 16px; right: 16px; bottom: 18px;
+    background: var(--color-primary); color: #fff; padding: 12px 16px;
+    border-radius: var(--radius-sm); font-size: var(--text-label); font-weight: 500;
+    transform: translateY(80px); opacity: 0; transition: all 0.25s ease; z-index: 50;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .caption-row { margin: 2px 16px 46px; max-width: 375px; }
+
+  #sketch-tools {
+    position: fixed; bottom: 12px; right: 12px; z-index: 9999;
+    font-family: system-ui; font-size: 12px; background: rgba(0,0,0,0.75); color: #fff;
+    padding: 8px 12px; border-radius: 10px; opacity: 0.45; transition: opacity 0.2s ease;
+    display: flex; gap: 10px; align-items: center;
+  }
+  #sketch-tools:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="variant-a" class="variant active">
+  <div class="phone" id="phone-a">
+    <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+    <div class="appbar"><div class="appbar-title">Confirm Device</div></div>
+
+    <div class="content">
+      <div id="a-loading" class="state-pane">
+        <div class="spinner"></div>
+        <div class="msg">Reading device identity…</div>
+      </div>
+
+      <div id="a-error" class="state-pane">
+        <div style="color:var(--color-danger); margin-bottom:16px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+        <div class="msg">Could not read device identity: GATT timeout</div>
+      </div>
+
+      <div id="a-populated" class="pane active" style="flex:1;">
+        <div class="device-card">
+          <div class="device-photo-wrap">
+            <img class="device-photo" id="a-photo" src="data:image/jpeg;base64,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qXFLigBgTFOC07FLQAgWloooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAppGacaSgCNlqFo6tkU0rQBnPF1NVniOK1HQdO9QtFx0oAyXi9arTQZHSth4cjpULQZ7UAeT/ABG+H0HjHRlWIrDqVqS9tKfU9VPsa+StehudO8/TbyBoLm3kMckTdVIr7/ntGIOBXkHxT+D58Z2jahpRW31mNcBjws47K3v6GgD4vcgk+lLjagJrqNU+GvxA0q8a1uPCWpMynAaKEyKfoRWxoHwU+I2vlQ+iNpcTEZlvXCYH+71oA86aUHoePU1GBLPKIoI2kduAqDJP0FfUXh/9mDSLcpN4j1a4v5Ophtx5Uf59T+lex+Hfh74Y8NRKmjaFa2pH/LQRguf+BHmgD408PfB34g+JCjwaMbG2bnzrw+WMeuOp/KvYPDn7M2kwbJfE2sz3zjkw2v7pPzPJ/SvpRbL2p4tPagDidA8A+FPDMYXRdBtrZh/y02bnP1Y8106wH0rTW2AHSni39qAM9YTnpUqwnPSr6wc1KsHPSgCksPtUoh46VcEPtUixc9KAKixe1SCKrYiFSLFz0oArLEfSpViqyI/anhKAIBHTxHUwUCnbaAGBeKeBTgKXFADQKXig0uOKAAUUUUAFFFJigBaKKKACiikxQAtFFFABRRQaADNFFFABRRRQAUUUUAFFFFAB3ooooAKKKKACiiigAooooAKKKKACiiigBCM00qKfRQBAYxTDGKskU0igCqYQaYYQO1XCophWgCoYFPaomtEJ6VeK+1JtoAo/ZEHanfZ1HQVc20bKAKRhHpSeTV7Zmk8ugCoIPanCGrgjpfLoAqCHmniL2qyFpdtAEAipwjqfbSgUARCOnhAKfiloAZinAUtFACYpaKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACijvRQAUUUUAFFFFABRRRQAUUUUAFFFFABSUtFABRRRQAmKTFOooAZikxUlGKAGYNJipMUYoAZto20+igBuKXFLRQAmBQAKWigAooooAM0UUUAFFFFAB3ooooAKKKKAA0gpaKACiiigApKWigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP//Z" alt="WW BlueCon Central Unit">
+          </div>
+          <div class="device-photo-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div class="device-card-body">
+            <div class="device-card-name ellipsis">WW-GATE-7C3A1F</div>
+            <div class="info-row">
+              <span class="info-label">Model</span>
+              <span class="info-value ellipsis">WW-4000</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Serial</span>
+              <span class="info-value ellipsis">7C3A1F092D81EFAB33</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Signal</span>
+              <span class="info-value rssi-strong">−42 dBm <span class="rssi-bars"><i></i><i></i><i></i></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="a-confirm-btn" onclick="confirmDevice('a', this)">
+            <span class="spinner"></span><span class="btn-label">Confirm Device</span>
+          </button>
+          <button class="btn-ghost" onclick="wrongDevice('a')">This isn't my device</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="a-toast" class="toast"></div>
+  </div>
+</div>
+
+<div id="variant-b-removed" style="display:none;">
+  <div class="phone" id="phone-b">
+    <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+    <div class="appbar"><div class="appbar-title">Confirm Device</div></div>
+
+    <div class="content">
+      <div id="b-loading" class="state-pane">
+        <div class="spinner"></div>
+        <div class="msg">Reading device identity…</div>
+      </div>
+
+      <div id="b-error" class="state-pane">
+        <div style="color:var(--color-danger); margin-bottom:16px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+        <div class="msg">Could not read device identity: GATT timeout</div>
+      </div>
+
+      <div id="b-populated" class="pane active" style="flex:1;">
+        <div class="spec-card">
+          <div class="spec-card-head">
+            <div class="spec-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></div>
+            <span class="spec-role-badge">Central Unit</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Model</span>
+            <span class="info-value ellipsis" style="max-width:190px;">WW BlueCon Central Unit — Access Bridge</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Serial</span>
+            <span class="info-value ellipsis" style="max-width:190px;">7C3A1F092D81EFAB33</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="b-confirm-btn" onclick="confirmDevice('b', this)">
+            <span class="spinner"></span><span class="btn-label">Confirm Device</span>
+          </button>
+          <button class="btn-outline" onclick="wrongDevice('b')">This isn't my device</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="b-toast" class="toast"></div>
+  </div>
+  <div class="dev-strip">
+    <span>Sketch state</span>
+    <button class="dev-btn current" onclick="setState('b','populated',event)">Populated</button>
+    <button class="dev-btn" onclick="setState('b','loading',event)">Loading</button>
+    <button class="dev-btn" onclick="setState('b','error',event)">Error</button>
+  </div>
+  <div class="caption-row">
+    <span><strong>B — Spec Card.</strong> Reuses the <code>ReadOnlyInfoRow</code> pattern (label left, value right, ellipsis) already planned for the System Info screen — one component, not a one-off. FilledButton + OutlinedButton matches the SCREENS.md spec literally; least custom work.</span>
+  </div>
+</div>
+
+<!-- ============ VARIANT C ============ -->
+<div id="variant-c" class="variant">
+  <div class="phone" id="phone-c">
+    <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+    <div class="appbar"><div class="appbar-title">Confirm Device</div></div>
+
+    <div class="content">
+      <div id="c-loading" class="state-pane">
+        <div class="spinner"></div>
+        <div class="msg">Reading device identity…</div>
+      </div>
+
+      <div id="c-error" class="state-pane">
+        <div style="color:var(--color-danger); margin-bottom:16px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+        <div class="msg">Could not read device identity: GATT timeout</div>
+      </div>
+
+      <div id="c-populated" class="pane active" style="flex:1;">
+        <div class="contact-card">
+          <div class="contact-top">
+            <div class="contact-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></div>
+            <div style="min-width:0;">
+              <div class="contact-name ellipsis" style="max-width:220px;">WW BlueCon Central Unit — Access Bridge</div>
+              <div class="contact-sub">Central Unit</div>
+            </div>
+          </div>
+          <div class="contact-divider"></div>
+          <div class="contact-serial-label">Serial</div>
+          <div class="contact-serial-value ellipsis">7C3A1F092D81EFAB33</div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-pill-primary" id="c-confirm-btn" onclick="confirmDevice('c', this)">Confirm Device</button>
+          <button class="btn-ghost" onclick="wrongDevice('c')">This isn't my device</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="c-toast" class="toast"></div>
+  </div>
+  <div class="dev-strip">
+    <span>Sketch state</span>
+    <button class="dev-btn current" onclick="setState('c','populated',event)">Populated</button>
+    <button class="dev-btn" onclick="setState('c','loading',event)">Loading</button>
+    <button class="dev-btn" onclick="setState('c','error',event)">Error</button>
+  </div>
+  <div class="caption-row">
+    <span><strong>C — Contact Card.</strong> Closest to the Deco-style reference's pill buttons and boxed card feel — model and icon sit side by side like a contact entry, serial below a divider. More consumer-polish, less "spec sheet."</span>
+  </div>
+</div>
+
+<!-- ============ VARIANT D (exploratory — requested merge with Log In) ============ -->
+<div id="variant-d" class="variant">
+  <div class="phone" id="phone-d">
+    <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+    <div class="appbar"><div class="appbar-title">Confirm Device</div></div>
+
+    <div class="content">
+      <div id="d-loading" class="state-pane">
+        <div class="spinner"></div>
+        <div class="msg">Reading device identity…</div>
+      </div>
+
+      <div id="d-error" class="state-pane">
+        <div style="color:var(--color-danger); margin-bottom:16px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+        <div class="msg">Could not read device identity: GATT timeout</div>
+      </div>
+
+      <div id="d-populated" class="pane active" style="flex:1;">
+        <div class="settled-hero" style="padding:18px 0 14px;">
+          <div class="settled-badge" style="width:62px;height:62px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 6.5 17.5 17.5 12 22V2l5.5 4.5L6.5 17.5"/></svg>
+            <div class="settled-check" style="width:22px;height:22px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+          </div>
+          <div class="settled-name ellipsis" style="margin-top:10px; font-size:17px;">WW-GATE-7C3A1F</div>
+          <div class="settled-model-sub ellipsis">WW BlueCon Central Unit · WW-4000</div>
+          <div style="display:flex; align-items:center; gap:10px; margin-top:8px; font-size:12px; color:var(--color-text-faint);">
+            <span class="ellipsis" style="max-width:140px;">…F092D81EFAB33</span>
+            <span style="width:1px; height:11px; background:var(--color-border);"></span>
+            <span class="rssi-strong" style="display:inline-flex; align-items:center; gap:4px; color:var(--color-text); font-weight:600;">−42 dBm <span class="rssi-bars"><i></i><i></i><i></i></span></span>
+          </div>
+        </div>
+
+        <div class="login-divider-label">Sign in to this device</div>
+
+        <div class="field-group">
+          <label class="field-label">Login</label>
+          <input class="field-input" type="text" value="installer">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <div class="field-input-wrap">
+            <input class="field-input" id="d-password" type="password" placeholder="Password" style="padding-right:42px;">
+            <button type="button" class="field-eye" onclick="togglePassword('d-password')" aria-label="Show password">
+              <svg id="d-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="d-confirm-btn" onclick="confirmAndLogin('d', this)">
+            <span class="spinner"></span><span class="btn-label">Confirm &amp; Log In</span>
+          </button>
+          <button class="btn-ghost" onclick="wrongDevice('d')">This isn't my device</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="d-toast" class="toast"></div>
+  </div>
+  <div class="dev-strip">
+    <span>Sketch state</span>
+    <button class="dev-btn current" onclick="setState('d','populated',event)">Populated</button>
+    <button class="dev-btn" onclick="setState('d','loading',event)">Loading</button>
+    <button class="dev-btn" onclick="setState('d','error',event)">Error</button>
+  </div>
+  <div class="caption-row">
+    <span><strong>D — Combined with Log In (exploratory, not a winner).</strong> Built on request to compare against the two-step flow directly. Saves a tap and a screen, carrying A's identity card forward compactly. But it merges two steps the spec keeps separate (`DeviceIdentityScreen` → `LoginScreen`) — the first-boot branch (Init Setup Wizard) and the login retry-cooldown/error behavior are both modeled as belonging to the *next* screen today, and would need to be redesigned onto this one rather than just visually bolted on. Flagging this as an open question rather than silently replacing the two-step flow — see README.</span>
+  </div>
+</div>
+
+<!-- ============ VARIANT E (confirm, then reveal Log In in place — animated) ============ -->
+<div id="variant-e" class="variant">
+  <div class="phone" id="phone-e">
+    <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+    <div class="appbar"><div class="appbar-title">Confirm Device</div></div>
+
+    <div class="content">
+      <div id="e-loading" class="state-pane">
+        <div class="spinner"></div>
+        <div class="msg">Reading device identity…</div>
+      </div>
+
+      <div id="e-error" class="state-pane">
+        <div style="color:var(--color-danger); margin-bottom:16px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+        <div class="msg">Could not read device identity: GATT timeout</div>
+      </div>
+
+      <div id="e-populated" class="pane active" style="flex:1;">
+        <div class="device-card" id="e-card">
+          <div class="device-photo-wrap">
+            <img class="device-photo" id="e-photo" alt="WW BlueCon Central Unit">
+          </div>
+          <div class="device-photo-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div class="device-card-body">
+            <div class="device-card-name ellipsis">WW-GATE-7C3A1F</div>
+            <div class="info-row">
+              <span class="info-label">Model</span>
+              <span class="info-value ellipsis">WW-4000</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Serial</span>
+              <span class="info-value ellipsis">7C3A1F092D81EFAB33</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Signal</span>
+              <span class="info-value rssi-strong">−42 dBm <span class="rssi-bars"><i></i><i></i><i></i></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal" id="e-reveal">
+          <div class="login-divider-label" style="padding-top:0; border-top:none; margin-bottom:12px;">Sign in to this device</div>
+          <div class="field-group">
+            <label class="field-label">Login</label>
+            <input class="field-input" type="text" value="installer">
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Password</label>
+            <div class="field-input-wrap">
+              <input class="field-input" id="e-password" type="password" placeholder="Password" style="padding-right:42px;">
+              <button type="button" class="field-eye" onclick="togglePassword('e-password')" aria-label="Show password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="e-action-btn" onclick="eAdvance(this)">
+            <span class="spinner"></span><span class="btn-label" id="e-btn-label">Confirm Device</span>
+          </button>
+          <button class="btn-ghost" onclick="wrongDevice('e')">This isn't my device</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="e-toast" class="toast"></div>
+  </div>
+  <div class="dev-strip">
+    <span>Sketch state</span>
+    <button class="dev-btn current" onclick="setState('e','populated',event)">Populated</button>
+    <button class="dev-btn" onclick="setState('e','loading',event)">Loading</button>
+    <button class="dev-btn" onclick="setState('e','error',event)">Error</button>
+    <button class="dev-btn" onclick="eReset()">↺ Replay animation</button>
+  </div>
+  <div class="caption-row">
+    <span><strong>E — Confirm → Reveal Log In (animated, same screen).</strong></span>
+  </div>
+</div>
+</div>
+
+<script>
+document.getElementById('e-photo').src = document.getElementById('a-photo').src;
+
+function showVariant(id, evt) {
+  document.querySelectorAll('.variant').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.variant-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('variant-' + id).classList.add('active');
+  evt.target.classList.add('active');
+}
+
+function setState(v, state, evt) {
+  ['loading','error'].forEach(s => {
+    const el = document.getElementById(v + '-' + s);
+    if (el) el.classList.toggle('active', s === state);
+  });
+  const pop = document.getElementById(v + '-populated');
+  if (pop) pop.classList.toggle('active', state === 'populated');
+
+  document.querySelectorAll('#variant-' + v + ' .dev-btn').forEach(b => b.classList.remove('current'));
+  evt.target.classList.add('current');
+}
+
+function toast(v, msg) {
+  const el = document.getElementById(v + '-toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+function confirmDevice(v, btn) {
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(() => {
+    toast(v, 'Device confirmed — signing in…');
+    setTimeout(() => { window.location.href = 'system-info.html'; }, 700);
+  }, 900);
+}
+
+function confirmAndLogin(v, btn) {
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    toast(v, 'Signed in — continuing to the dashboard…');
+  }, 900);
+}
+
+function togglePassword(id) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+let eStep = 'confirm';
+
+function eAdvance(btn) {
+  if (eStep === 'confirm') {
+    document.getElementById('e-card').classList.add('confirmed');
+    document.getElementById('e-reveal').classList.add('open');
+    const label = document.getElementById('e-btn-label');
+    label.style.opacity = '0';
+    setTimeout(() => { label.textContent = 'Log In'; label.style.opacity = '1'; }, 220);
+    eStep = 'login';
+    toast('e', 'Device confirmed — sign in to continue.');
+  } else {
+    btn.classList.add('loading');
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      toast('e', 'Signed in — continuing to the dashboard…');
+    }, 900);
+  }
+}
+
+function eReset() {
+  eStep = 'confirm';
+  document.getElementById('e-card').classList.remove('confirmed');
+  document.getElementById('e-reveal').classList.remove('open');
+  document.getElementById('e-btn-label').textContent = 'Confirm Device';
+}
+
+function wrongDevice(v) {
+  toast(v, "Returning to device scan — make sure you select the correct unit.");
+  const phone = document.getElementById('phone-' + v);
+  phone.classList.add('popping');
+  setTimeout(() => { window.location.href = 'device-scan.html'; }, 900);
+}
+</script>
+</body>
+</html>

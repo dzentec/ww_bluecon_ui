@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — Setup New Device</title>
+<link rel="stylesheet" href="themes/default.css">
+<style>
+  :root {
+    --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
+    --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
+    --color-danger: #E5484D; --color-success: #2FB344;
+    --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
+    --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+    --text-heading: 20px; --text-body: 15px; --text-label: 13px;
+    --radius-card: 20px; --radius-sm: 12px; --radius-pill: 999px;
+    --shadow-card: 0 16px 32px rgba(27, 36, 48, 0.06); --shadow-card-sm: 0 6px 16px rgba(27, 36, 48, 0.05);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: #DDE1E6; color: var(--color-text); padding-top: 52px; }
+  button, select, input { font-family: var(--font-sans); }
+
+  #variant-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 9998; background: var(--color-primary); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 10px 16px; display: flex; gap: 8px; align-items: center; overflow-x: auto; }
+  .variant-tab { appearance: none; border: 1px solid rgba(255,255,255,0.18); background: transparent; color: rgba(255,255,255,0.72); padding: 7px 14px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.15s ease; }
+  .variant-tab:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+  .variant-tab.active { background: #fff; color: var(--color-primary); border-color: #fff; }
+  .variant { display: none; padding: 40px 16px 80px; }
+  .variant.active { display: block; }
+
+  .phone { width: 375px; margin: 0 auto; background: var(--color-bg); border-radius: 36px; box-shadow: 0 30px 60px rgba(10,14,20,0.35), 0 0 0 10px #15181d, 0 0 0 11px #2a2e35; overflow: hidden; height: 760px; display: flex; flex-direction: column; position: relative; }
+  .status-ios { height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 13px; font-weight: 600; color: var(--color-text); flex-shrink: 0; }
+
+  .wiz-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px 6px; flex-shrink: 0; min-height: 30px; }
+  .wiz-back { appearance: none; border: none; background: none; color: var(--color-text-muted); font-size: 14px; font-weight: 500; padding: 4px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .wiz-step-indicator { font-size: 11px; font-weight: 600; color: var(--color-text-faint); margin-left: auto; text-transform: uppercase; letter-spacing: 0.03em; }
+  .screen-title { font-size: var(--text-heading); font-weight: 600; padding: 4px 16px 10px; flex-shrink: 0; }
+  .screen-sub { font-size: 12.5px; color: var(--color-text-muted); padding: 0 16px 14px; line-height: 1.5; margin-top: -8px; }
+
+  .content { flex: 1; overflow-y: auto; padding: 0 16px 40px; }
+  .wiz-screen { display: none; }
+  .wiz-screen.active { display: block; }
+  .wiz-screen.centered.active { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(760px - 140px); text-align: center; padding-bottom: 60px; }
+
+  .section-card { background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card-sm); padding: 18px; margin-bottom: 14px; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--color-text-faint); margin-bottom: 14px; }
+
+  /* ---------- Entry choice cards ---------- */
+  .choice-card { display: flex; align-items: center; gap: 14px; background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.15s ease; }
+  .choice-card:hover { border-color: var(--color-accent); }
+  .choice-icon { width: 46px; height: 46px; border-radius: 12px; background: var(--color-accent-bg); color: var(--color-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .choice-text { flex: 1; min-width: 0; }
+  .choice-title { font-size: 14.5px; font-weight: 600; }
+  .choice-sub { font-size: 12px; color: var(--color-text-faint); margin-top: 2px; line-height: 1.4; }
+  .choice-chevron { color: var(--color-text-faint); flex-shrink: 0; }
+
+  /* ---------- QR scanner mock ---------- */
+  .qr-viewfinder { width: 230px; height: 230px; background: #14181F; border-radius: 20px; position: relative; margin: 10px auto 24px; overflow: hidden; }
+  .qr-corner { position: absolute; width: 28px; height: 28px; border: 3px solid #fff; }
+  .qr-corner.tl { top: 14px; left: 14px; border-right: none; border-bottom: none; border-top-left-radius: 6px; }
+  .qr-corner.tr { top: 14px; right: 14px; border-left: none; border-bottom: none; border-top-right-radius: 6px; }
+  .qr-corner.bl { bottom: 14px; left: 14px; border-right: none; border-top: none; border-bottom-left-radius: 6px; }
+  .qr-corner.br { bottom: 14px; right: 14px; border-left: none; border-top: none; border-bottom-right-radius: 6px; }
+  .qr-scanline { position: absolute; left: 14px; right: 14px; height: 2px; background: var(--color-accent); box-shadow: 0 0 8px var(--color-accent); animation: qrscan 2s ease-in-out infinite; }
+  @keyframes qrscan { 0%,100% { top: 20px; } 50% { top: 210px; } }
+
+  /* ---------- Numbered instruction list (Power-On Hold) ---------- */
+  .instr-row { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--color-border); text-align: left; }
+  .instr-row:first-of-type { border-top: none; }
+  .instr-num { width: 26px; height: 26px; border-radius: 50%; background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .instr-text { font-size: 13.5px; line-height: 1.5; padding-top: 2px; }
+  .instr-text strong { font-weight: 700; }
+
+  /* ---------- Radar pulse (shared motif) ---------- */
+  .radar-stage { position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin: 0 auto; }
+  .radar-ring { position: absolute; border-radius: 50%; border: 1.5px solid var(--color-accent); opacity: 0; animation: radar-pulse 2.4s ease-out infinite; }
+  @keyframes radar-pulse { 0% { width: var(--ring-start, 60px); height: var(--ring-start, 60px); opacity: 0.65; } 100% { width: var(--ring-end, 150px); height: var(--ring-end, 150px); opacity: 0; } }
+  .radar-core { position: relative; z-index: 2; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 10px 24px rgba(27,36,48,0.28); }
+  .radar-core.success { background: var(--color-success); animation: none; }
+  .radar-core.failed { background: var(--color-text-faint); }
+
+  .wiz-heading { font-size: 17px; font-weight: 600; margin-top: 22px; }
+  .wiz-sub { font-size: 13px; color: var(--color-text-muted); margin-top: 8px; max-width: 270px; line-height: 1.55; }
+  .wiz-sub strong { color: var(--color-text); }
+
+  .signal-meter { display: inline-flex; align-items: flex-end; gap: 3px; height: 20px; margin: 14px 0 2px; }
+  .signal-meter i { display: block; width: 5px; border-radius: 2px; background: var(--color-border); }
+  .signal-meter i:nth-child(1) { height: 6px; } .signal-meter i:nth-child(2) { height: 11px; }
+  .signal-meter i:nth-child(3) { height: 16px; } .signal-meter i:nth-child(4) { height: 20px; }
+  .signal-meter.strong i { background: var(--color-success); }
+  .signal-meter.weak i:nth-child(-n+1) { background: #D98A2B; }
+
+  .found-device-card { display: flex; align-items: center; gap: 12px; background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: 14px; padding: 13px; margin-top: 18px; width: 100%; max-width: 280px; text-align: left; }
+  .found-device-icon { width: 38px; height: 38px; border-radius: 10px; background: #EEF0F2; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); flex-shrink: 0; }
+  .found-device-info { flex: 1; min-width: 0; }
+  .found-device-name { font-size: 13.5px; font-weight: 600; }
+  .found-device-sub { font-size: 11px; color: var(--color-text-faint); margin-top: 1px; }
+
+  .btn-primary-full { appearance: none; border: none; width: 100%; max-width: 280px; background: var(--color-primary); color: #fff; font-size: 15px; font-weight: 600; padding: 14px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 24px; }
+  .btn-primary-full:disabled { background: #C9CCD1; cursor: not-allowed; }
+  .btn-ghost-full { appearance: none; border: none; width: 100%; max-width: 280px; background: transparent; color: var(--color-text-muted); font-size: 14px; font-weight: 500; padding: 10px; cursor: pointer; margin-top: 4px; }
+  .btn-outline-full { appearance: none; width: 100%; background: transparent; color: var(--color-primary); border: 1.5px dashed var(--color-border); font-size: 14px; font-weight: 600; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; }
+
+  /* ---------- Physical-click confirmation ---------- */
+  .countdown-ring-wrap { position: relative; width: 120px; height: 120px; margin: 4px auto 18px; }
+  .countdown-ring-svg { transform: rotate(-90deg); }
+  .countdown-ring-bg { fill: none; stroke: var(--color-border); stroke-width: 7; }
+  .countdown-ring-fg { fill: none; stroke: var(--color-accent); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+  .countdown-ring-fg.urgent { stroke: var(--color-danger); }
+  .countdown-ring-number { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; }
+  .cue-note { display: flex; gap: 8px; background: var(--color-accent-bg); border-radius: 12px; padding: 11px 13px; margin-top: 18px; max-width: 280px; text-align: left; align-items: flex-start; }
+  .cue-note svg { color: var(--color-accent); flex-shrink: 0; margin-top: 1px; }
+  .cue-note-text { font-size: 12px; color: #1B4FA8; line-height: 1.5; }
+  .lockout-note { font-size: 12px; color: var(--color-text-faint); margin-top: 14px; }
+
+  /* Variant A: full-screen countdown takeover */
+  .confirm-full { position: absolute; left: 0; right: 0; top: 28px; bottom: 0; background: var(--color-bg); z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px 28px; visibility: hidden; opacity: 0; transition: opacity 0.25s ease; }
+  .confirm-full.open { visibility: visible; opacity: 1; }
+
+  /* Variant B: inline confirm card, device card + cancel stay visible */
+  .confirm-inline-card { background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card-sm); padding: 20px; margin-top: 14px; display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; max-width: 280px; }
+  .confirm-inline-card .countdown-ring-wrap { width: 84px; height: 84px; margin: 2px auto 12px; }
+  .confirm-inline-card .countdown-ring-number { font-size: 24px; }
+  .confirm-inline-card .wiz-heading { font-size: 14.5px; margin-top: 0; }
+  .confirm-inline-card .wiz-sub { font-size: 12px; margin-top: 6px; }
+
+  /* ---------- Shared Network/Cloud/Security data wizard ---------- */
+  .field-group { margin-bottom: 14px; }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-label { font-size: 12px; color: var(--color-text-muted); margin-bottom: 6px; display: block; font-weight: 500; }
+  .field-input, .field-select-full { width: 100%; padding: 11px 13px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px; color: var(--color-text); background: var(--color-surface); transition: border-color 0.15s ease; }
+  .field-input:focus, .field-select-full:focus { outline: none; border-color: var(--color-accent); }
+  .field-input:disabled { color: var(--color-text-faint); background: #F4F5F7; border-color: var(--color-border); cursor: not-allowed; }
+  .field-input.invalid { border-color: var(--color-danger); }
+  .field-helper { font-size: 11px; color: var(--color-text-faint); font-style: italic; margin-top: 5px; line-height: 1.4; }
+  .field-error { font-size: 11px; color: var(--color-danger); margin-top: 5px; display: none; }
+  .field-error.show { display: block; }
+  .radio-group { display: flex; gap: 20px; }
+  .radio-option { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--color-text); cursor: pointer; }
+  .radio-option input[type=radio] { width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; margin: 0; }
+  .toggle-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+  .toggle-row:last-of-type { margin-bottom: 0; }
+  .toggle-row .field-text { min-width: 0; }
+  .toggle-row .field-label { margin-bottom: 3px; }
+  .switch { position: relative; width: 42px; height: 25px; flex-shrink: 0; display: inline-block; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch .track { position: absolute; inset: 0; background: var(--color-border); border-radius: 999px; transition: background 0.2s ease; cursor: pointer; }
+  .switch .thumb { position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; background: #fff; border-radius: 50%; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+  .switch input:checked ~ .track { background: var(--color-primary); }
+  .switch input:checked ~ .track .thumb { transform: translateX(17px); }
+  .wiz-nav-row { display: flex; gap: 10px; margin-top: 4px; }
+  .wiz-nav-row .btn-primary-full { margin-top: 0; }
+
+  .complete-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--color-success-bg); color: var(--color-success); display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .field-input-wrap { position: relative; }
+  .field-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--color-text-faint); padding: 6px; display: flex; align-items: center; justify-content: center; }
+  .field-eye:hover { color: var(--color-text-muted); }
+  .btn-save { appearance: none; border: none; background: var(--color-primary); color: #fff; font-size: 14px; font-weight: 600; padding: 10px 22px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 8px; }
+  .btn-save:disabled { background: #C9CCD1; color: #fff; cursor: not-allowed; }
+  .btn-save .spinner { display: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; animation: spin 0.8s linear infinite; }
+  .btn-save.loading .spinner { display: inline-block; }
+
+  .dev-strip { width: 375px; margin: 14px auto 0; padding: 8px 10px; border: 1px dashed rgba(27,36,48,0.28); border-radius: 10px; background: rgba(255,255,255,0.5); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .dev-strip span.dev-label { font-size: 10px; color: var(--color-text-faint); margin-right: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .dev-btn { appearance: none; border: 1px solid var(--color-border); background: #fff; border-radius: 999px; padding: 4px 10px; font-size: 11px; color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; }
+  .dev-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .dev-btn.current { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+  .toast { position: absolute; left: 16px; right: 16px; bottom: 20px; background: var(--color-primary); color: #fff; padding: 12px 16px; border-radius: var(--radius-sm); font-size: var(--text-label); font-weight: 500; transform: translateY(40px); opacity: 0; transition: all 0.25s ease; z-index: 60; box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--color-danger); }
+
+  .caption-row { margin: 2px 16px 46px; max-width: 375px; font-size: 12px; color: #5b6572; }
+  #sketch-tools { position: fixed; bottom: 12px; right: 12px; z-index: 9999; font-family: system-ui; font-size: 12px; background: rgba(0,0,0,0.75); color: #fff; padding: 8px 12px; border-radius: 10px; opacity: 0.45; transition: opacity 0.2s ease; display: flex; gap: 10px; align-items: center; }
+  #sketch-tools:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="variant-a" class="variant active">
+  <div class="phone" id="phone-a">
+    <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+
+    <div class="wiz-header" id="a-header"></div>
+    <div class="content" id="a-content">
+
+      <div class="wiz-screen centered active" id="a-screen-entry">
+        <div class="screen-title" style="padding:0;margin-bottom:4px;">Set Up New Device</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 18px;">Choose how you'd like to add this device.</div>
+        <div style="width:100%;">
+          <div class="choice-card" onclick="chooseQR('a')">
+            <span class="choice-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v3M17 20h3"/></svg></span>
+            <span class="choice-text"><span class="choice-title">Scan QR Code</span><span class="choice-sub">Fastest way — for a factory-new device with its box or label</span></span>
+            <span class="choice-chevron">›</span>
+          </div>
+          <div class="choice-card" onclick="choosePoh('a')">
+            <span class="choice-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5.5 10a7 7 0 0 1 12-3.5L20 9M18.5 14a7 7 0 0 1-12 3.5L4 15"/></svg></span>
+            <span class="choice-text"><span class="choice-title">Reset &amp; Recover</span><span class="choice-sub">Lost the box or QR code? Reset the device and add it with no codes</span></span>
+            <span class="choice-chevron">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wiz-screen centered" id="a-screen-qr-scan">
+        <div class="screen-title" style="padding:0;margin-bottom:2px;">Scan QR Code</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 4px;">Point your camera at the QR code on the device or its box.</div>
+        <div class="qr-viewfinder"><div class="qr-corner tl"></div><div class="qr-corner tr"></div><div class="qr-corner bl"></div><div class="qr-corner br"></div><div class="qr-scanline"></div></div>
+        <button class="btn-outline-full" style="max-width:280px;" onclick="simulateQRScan('a')">Simulate Scan (dev)</button>
+      </div>
+
+      <div class="wiz-screen centered" id="a-screen-qr-search">
+        <div class="radar-stage" style="width:120px;height:120px;" id="a-qr-radar">
+          <div class="radar-ring" style="--ring-start:48px; --ring-end:120px; width:48px; height:48px; animation-delay:0s;"></div>
+          <div class="radar-ring" style="--ring-start:48px; --ring-end:120px; width:48px; height:48px; animation-delay:0.8s;"></div>
+          <div class="radar-core" style="width:48px;height:48px;" id="a-qr-radar-core">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20v-7M8 10a5.7 5.7 0 0 1 8 0M5 7a10 10 0 0 1 14 0M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="wiz-heading" id="a-qr-search-heading">Searching for SN-88392011…</div>
+        <div class="wiz-sub" id="a-qr-search-sub">Make sure the device is powered on and nearby.</div>
+      </div>
+
+      <div class="wiz-screen centered" id="a-screen-qr-verify">
+        <div class="radar-stage" style="width:70px;height:70px;">
+          <div class="radar-core" style="width:70px;height:70px;" id="a-qr-verify-core"><span class="spin-ring" id="a-qr-verify-spinner" style="width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,0.35);border-top-color:#fff;animation:spin 0.8s linear infinite;display:block;"></span></div>
+        </div>
+        <div class="wiz-heading" id="a-qr-verify-heading">Verifying device identity…</div>
+        <div class="wiz-sub" id="a-qr-verify-sub">Checking the device's factory credentials against the QR code you scanned.</div>
+        <div id="a-qr-verify-actions" style="display:none;width:100%;"></div>
+      </div>
+
+      <div class="wiz-screen centered" id="a-screen-poh-instructions">
+        <div class="screen-title" style="padding:0;margin-bottom:2px;">Reset the Device</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 6px;">This erases the device's current pairing and starts fresh.</div>
+        <div style="width:100%;text-align:left;">
+          <div class="instr-row"><span class="instr-num">1</span><span class="instr-text">Unplug the device's power.</span></div>
+          <div class="instr-row"><span class="instr-num">2</span><span class="instr-text">Press and hold any button on the device.</span></div>
+          <div class="instr-row"><span class="instr-num">3</span><span class="instr-text">Reconnect power <strong>while still holding</strong> the button.</span></div>
+          <div class="instr-row"><span class="instr-num">4</span><span class="instr-text">Keep holding for <strong>5 seconds</strong>.</span></div>
+          <div class="instr-row"><span class="instr-num">5</span><span class="instr-text">Release once the LED blinks <strong>blue rapidly</strong> — reset complete.</span></div>
+        </div>
+        <button class="btn-primary-full" onclick="startPohSearch('a')">I've Done This — Scan for Device</button>
+      </div>
+
+      <div class="wiz-screen centered" id="a-screen-poh-search">
+        <div class="radar-stage" style="width:120px;height:120px;" id="a-poh-radar">
+          <div class="radar-ring" style="--ring-start:48px; --ring-end:120px; width:48px; height:48px; animation-delay:0s;"></div>
+          <div class="radar-ring" style="--ring-start:48px; --ring-end:120px; width:48px; height:48px; animation-delay:0.8s;"></div>
+          <div class="radar-core" style="width:48px;height:48px;" id="a-poh-radar-core">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20v-7M8 10a5.7 5.7 0 0 1 8 0M5 7a10 10 0 0 1 14 0M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="wiz-heading">Hold your phone close to the device</div>
+        <div class="wiz-sub">Within about 15–20 cm of the device's housing — closer than usual, so only the device you're touching responds.</div>
+        <div class="signal-meter weak" id="a-poh-signal"><i></i><i></i><i></i><i></i></div>
+        <div class="wiz-sub" id="a-poh-signal-label" style="margin-top:0;">Move closer…</div>
+        <div class="found-device-card" id="a-poh-found-card" style="display:none;">
+          <span class="found-device-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></span>
+          <span class="found-device-info"><span class="found-device-name">WW-RESET-C9A3</span><span class="found-device-sub">Signal −41 dBm — close enough</span></span>
+        </div>
+        <button class="btn-primary-full" id="a-poh-connect-btn" style="display:none;" onclick="pohConnect('a')">Connect</button>
+      </div>
+
+      <div class="wiz-screen centered" id="a-screen-poh-confirm-placeholder">
+        <div class="wiz-sub">Confirmation runs full-screen for this variant — see the takeover below.</div>
+      </div>
+
+      <div class="wiz-screen" id="a-screen-mandatory-security">
+        <div class="screen-title" style="padding:0 0 2px;">Set a Login &amp; Password</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 14px;">Required before you can finish setup — this device cannot be left with no login configured.</div>
+        <div class="section-card">
+          <div class="safety-callout danger-tint">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1.6 1.6 0 0 0 1.4 2.5h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
+            <span class="safety-callout-text">This is the login for this physical device. If you forget the password, you'll need a factory reset to get back in.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Login</label>
+            <input class="field-input" id="a-sec-login" value="installer" oninput="markMandatorySecDirty('a')">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Password</label>
+            <div class="field-input-wrap">
+              <input class="field-input" type="password" id="a-sec-newpass" style="padding-right:42px;" oninput="validateMandatorySec('a')">
+              <button type="button" class="field-eye" onclick="togglePw('a-sec-newpass')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="field-helper">At least 8 characters.</div>
+            <div class="field-error" id="a-sec-newpass-error">Password must be at least 8 characters</div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Confirm Password</label>
+            <div class="field-input-wrap">
+              <input class="field-input" type="password" id="a-sec-confirmpass" style="padding-right:42px;" oninput="validateMandatorySec('a')">
+              <button type="button" class="field-eye" onclick="togglePw('a-sec-confirmpass')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="field-error" id="a-sec-confirmpass-error">Passwords don't match</div>
+          </div>
+          <div class="save-row" style="display:flex;justify-content:flex-end;margin-top:16px;">
+            <button class="btn-save" id="a-sec-save-btn" disabled onclick="trySaveMandatorySec('a')">
+              <span class="spinner"></span><span>Save &amp; Continue</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wiz-screen centered" id="a-screen-complete">
+        <div class="complete-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+        <div class="wiz-heading" style="margin-top:18px;">Setup Complete</div>
+        <div class="wiz-sub">Login and password are set. Your device is ready to use.</div>
+        <button class="btn-primary-full" onclick="window.location.href='system-info.html'">Continue to Dashboard</button>
+      </div>
+    </div>
+
+    <div class="confirm-full" id="a-confirm-full">
+      <div class="countdown-ring-wrap">
+        <svg class="countdown-ring-svg" width="120" height="120" viewBox="0 0 120 120">
+          <circle class="countdown-ring-bg" cx="60" cy="60" r="52"/>
+          <circle class="countdown-ring-fg" id="a-countdown-ring" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="0"/>
+        </svg>
+        <div class="countdown-ring-number" id="a-countdown-number">10</div>
+      </div>
+      <div class="wiz-heading" id="a-confirm-heading">Press any button on the device now</div>
+      <div class="wiz-sub" id="a-confirm-sub">You have 10 seconds to confirm you're physically at the device.</div>
+      <div class="cue-note" id="a-cue-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 9l12-2"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span class="cue-note-text">The device will beep and blink green while it's waiting for your press.</span>
+      </div>
+      <div id="a-confirm-actions" style="width:100%;"></div>
+      <button class="btn-outline-full" style="max-width:280px;margin-top:18px;" id="a-confirm-sim-btn" onclick="simulateButtonPress('a')">Simulate Button Press (dev)</button>
+    </div>
+
+    <div id="a-toast" class="toast"></div>
+  </div>
+</div>
+
+<div id="variant-b-removed" style="display:none;">
+  <div class="phone" id="phone-b">
+    <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+
+    <div class="wiz-header" id="b-header"></div>
+    <div class="content" id="b-content">
+
+      <div class="wiz-screen centered active" id="b-screen-entry">
+        <div class="screen-title" style="padding:0;margin-bottom:4px;">Set Up New Device</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 18px;">Choose how you'd like to add this device.</div>
+        <div style="width:100%;">
+          <div class="choice-card" onclick="chooseQR('b')">
+            <span class="choice-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v3M17 20h3"/></svg></span>
+            <span class="choice-text"><span class="choice-title">Scan QR Code</span><span class="choice-sub">Fastest way — for a factory-new device with its box or label</span></span>
+            <span class="choice-chevron">›</span>
+          </div>
+          <div class="choice-card" onclick="choosePoh('b')">
+            <span class="choice-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5.5 10a7 7 0 0 1 12-3.5L20 9M18.5 14a7 7 0 0 1-12 3.5L4 15"/></svg></span>
+            <span class="choice-text"><span class="choice-title">Reset &amp; Recover</span><span class="choice-sub">Lost the box or QR code? Reset the device and add it with no codes</span></span>
+            <span class="choice-chevron">›</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wiz-screen centered" id="b-screen-qr-scan">
+        <div class="screen-title" style="padding:0;margin-bottom:2px;">Scan QR Code</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 4px;">Point your camera at the QR code on the device or its box.</div>
+        <div class="qr-viewfinder"><div class="qr-corner tl"></div><div class="qr-corner tr"></div><div class="qr-corner bl"></div><div class="qr-corner br"></div><div class="qr-scanline"></div></div>
+        <button class="btn-outline-full" style="max-width:280px;" onclick="simulateQRScan('b')">Simulate Scan (dev)</button>
+      </div>
+
+      <div class="wiz-screen centered" id="b-screen-qr-search">
+        <div class="radar-stage" style="width:120px;height:120px;" id="b-qr-radar">
+          <div class="radar-ring" style="--ring-start:48px; --ring-end:120px; width:48px; height:48px; animation-delay:0s;"></div>
+          <div class="radar-ring" style="--ring-start:48px; --ring-end:120px; width:48px; height:48px; animation-delay:0.8s;"></div>
+          <div class="radar-core" style="width:48px;height:48px;" id="b-qr-radar-core">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20v-7M8 10a5.7 5.7 0 0 1 8 0M5 7a10 10 0 0 1 14 0M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="wiz-heading" id="b-qr-search-heading">Searching for SN-88392011…</div>
+        <div class="wiz-sub" id="b-qr-search-sub">Make sure the device is powered on and nearby.</div>
+      </div>
+
+      <div class="wiz-screen centered" id="b-screen-qr-verify">
+        <div class="radar-stage" style="width:70px;height:70px;">
+          <div class="radar-core" style="width:70px;height:70px;" id="b-qr-verify-core"><span class="spin-ring" id="b-qr-verify-spinner" style="width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,0.35);border-top-color:#fff;animation:spin 0.8s linear infinite;display:block;"></span></div>
+        </div>
+        <div class="wiz-heading" id="b-qr-verify-heading">Verifying device identity…</div>
+        <div class="wiz-sub" id="b-qr-verify-sub">Checking the device's factory credentials against the QR code you scanned.</div>
+        <div id="b-qr-verify-actions" style="display:none;width:100%;"></div>
+      </div>
+
+      <div class="wiz-screen centered" id="b-screen-poh-instructions">
+        <div class="screen-title" style="padding:0;margin-bottom:2px;">Reset the Device</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 6px;">This erases the device's current pairing and starts fresh.</div>
+        <div style="width:100%;text-align:left;">
+          <div class="instr-row"><span class="instr-num">1</span><span class="instr-text">Unplug the device's power.</span></div>
+          <div class="instr-row"><span class="instr-num">2</span><span class="instr-text">Press and hold any button on the device.</span></div>
+          <div class="instr-row"><span class="instr-num">3</span><span class="instr-text">Reconnect power <strong>while still holding</strong> the button.</span></div>
+          <div class="instr-row"><span class="instr-num">4</span><span class="instr-text">Keep holding for <strong>5 seconds</strong>.</span></div>
+          <div class="instr-row"><span class="instr-num">5</span><span class="instr-text">Release once the LED blinks <strong>blue rapidly</strong> — reset complete.</span></div>
+        </div>
+        <button class="btn-primary-full" onclick="startPohSearch('b')">I've Done This — Scan for Device</button>
+      </div>
+
+      <div class="wiz-screen centered" id="b-screen-poh-search">
+        <div class="radar-stage" style="width:120px;height:120px;" id="b-poh-radar">
+          <div class="radar-ring" style="--ring-start:48px; --ring-end:120px; width:48px; height:48px; animation-delay:0s;"></div>
+          <div class="radar-ring" style="--ring-start:48px; --ring-end:120px; width:48px; height:48px; animation-delay:0.8s;"></div>
+          <div class="radar-core" style="width:48px;height:48px;" id="b-poh-radar-core">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20v-7M8 10a5.7 5.7 0 0 1 8 0M5 7a10 10 0 0 1 14 0M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="wiz-heading">Hold your phone close to the device</div>
+        <div class="wiz-sub">Within about 15–20 cm of the device's housing — closer than usual, so only the device you're touching responds.</div>
+        <div class="signal-meter weak" id="b-poh-signal"><i></i><i></i><i></i><i></i></div>
+        <div class="wiz-sub" id="b-poh-signal-label" style="margin-top:0;">Move closer…</div>
+        <div class="found-device-card" id="b-poh-found-card" style="display:none;">
+          <span class="found-device-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></span>
+          <span class="found-device-info"><span class="found-device-name">WW-RESET-C9A3</span><span class="found-device-sub">Signal −41 dBm — close enough</span></span>
+        </div>
+        <button class="btn-primary-full" id="b-poh-connect-btn" style="display:none;" onclick="pohConnect('b')">Connect</button>
+      </div>
+
+      <!-- Variant B: confirmation is inline, device card + cancel stay visible -->
+      <div class="wiz-screen centered" id="b-screen-poh-confirm">
+        <div class="found-device-card">
+          <span class="found-device-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></span>
+          <span class="found-device-info"><span class="found-device-name">WW-RESET-C9A3</span><span class="found-device-sub">Connected — waiting for confirmation</span></span>
+        </div>
+        <div class="confirm-inline-card">
+          <div class="countdown-ring-wrap">
+            <svg class="countdown-ring-svg" width="84" height="84" viewBox="0 0 84 84">
+              <circle class="countdown-ring-bg" cx="42" cy="42" r="36" stroke-width="6"/>
+              <circle class="countdown-ring-fg" id="b-countdown-ring" cx="42" cy="42" r="36" stroke-width="6" stroke-dasharray="226.2" stroke-dashoffset="0"/>
+            </svg>
+            <div class="countdown-ring-number" id="b-countdown-number">10</div>
+          </div>
+          <div class="wiz-heading" id="b-confirm-heading">Press any button on the device</div>
+          <div class="wiz-sub" id="b-confirm-sub">10 seconds to confirm you're at the device.</div>
+          <div class="cue-note" id="b-cue-note" style="margin-top:12px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 9l12-2"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            <span class="cue-note-text">The device will beep and blink green while it's waiting.</span>
+          </div>
+          <div id="b-confirm-actions" style="width:100%;"></div>
+          <button class="btn-outline-full" style="max-width:280px;margin-top:14px;" id="b-confirm-sim-btn" onclick="simulateButtonPress('b')">Simulate Button Press (dev)</button>
+        </div>
+        <button class="btn-ghost-full" onclick="cancelPohConfirm('b')">Cancel</button>
+      </div>
+
+      <div class="wiz-screen" id="b-screen-mandatory-security">
+        <div class="screen-title" style="padding:0 0 2px;">Set a Login &amp; Password</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 14px;">Required before you can finish setup — this device cannot be left with no login configured.</div>
+        <div class="section-card">
+          <div class="safety-callout danger-tint">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1.6 1.6 0 0 0 1.4 2.5h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
+            <span class="safety-callout-text">This is the login for this physical device. If you forget the password, you'll need a factory reset to get back in.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Login</label>
+            <input class="field-input" id="b-sec-login" value="installer" oninput="markMandatorySecDirty('b')">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Password</label>
+            <div class="field-input-wrap">
+              <input class="field-input" type="password" id="b-sec-newpass" style="padding-right:42px;" oninput="validateMandatorySec('b')">
+              <button type="button" class="field-eye" onclick="togglePw('b-sec-newpass')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="field-helper">At least 8 characters.</div>
+            <div class="field-error" id="b-sec-newpass-error">Password must be at least 8 characters</div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Confirm Password</label>
+            <div class="field-input-wrap">
+              <input class="field-input" type="password" id="b-sec-confirmpass" style="padding-right:42px;" oninput="validateMandatorySec('b')">
+              <button type="button" class="field-eye" onclick="togglePw('b-sec-confirmpass')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="field-error" id="b-sec-confirmpass-error">Passwords don't match</div>
+          </div>
+          <div class="save-row" style="display:flex;justify-content:flex-end;margin-top:16px;">
+            <button class="btn-save" id="b-sec-save-btn" disabled onclick="trySaveMandatorySec('b')">
+              <span class="spinner"></span><span>Save &amp; Continue</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wiz-screen centered" id="b-screen-complete">
+        <div class="complete-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+        <div class="wiz-heading" style="margin-top:18px;">Setup Complete</div>
+        <div class="wiz-sub">Login and password are set. Your device is ready to use.</div>
+        <button class="btn-primary-full" onclick="finishSetup('b')">Continue to Dashboard</button>
+      </div>
+    </div>
+
+    <div id="b-toast" class="toast"></div>
+  </div>
+  <div class="dev-strip">
+    <span class="dev-label">Dev</span>
+    <button class="dev-btn current" data-outcome="found" onclick="setQrOutcome('b','found',event)">QR search: Found</button>
+    <button class="dev-btn" data-outcome="timeout" onclick="setQrOutcome('b','timeout',event)">QR search: Timeout</button>
+  </div>
+  <div class="dev-strip">
+    <span class="dev-label">Dev</span>
+    <button class="dev-btn current" data-outcome="ok" onclick="setVerifyOutcome('b','ok',event)">Verify: OK</button>
+    <button class="dev-btn" data-outcome="fail" onclick="setVerifyOutcome('b','fail',event)">Verify: Fail</button>
+  </div>
+  <div class="dev-strip">
+    <span class="dev-label">Dev</span>
+    <button class="dev-btn" onclick="simulatePohClose('b')">Simulate: Close enough (proximity)</button>
+  </div>
+  </div>
+</div>
+
+<script>
+const wiz = {
+  a: { path: null, qrOutcome: 'found', verifyOutcome: 'ok', pohSignal: 'weak', countdownTimer: null, countdownSeconds: 10, lockout: false, secDirty: false },
+  b: { path: null, qrOutcome: 'found', verifyOutcome: 'ok', pohSignal: 'weak', countdownTimer: null, countdownSeconds: 10, lockout: false, secDirty: false },
+};
+
+function showVariant(v, e){
+  document.querySelectorAll('.variant').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.variant-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('variant-'+v).classList.add('active');
+  e.target.classList.add('active');
+}
+
+function showToast(v, msg, isError){
+  const t = document.getElementById(v+'-toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+function showScreen(v, id, headerHtml){
+  document.querySelectorAll('#phone-'+v+' .wiz-screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(v+'-screen-'+id);
+  if(el) el.classList.add('active');
+  document.getElementById(v+'-header').innerHTML = headerHtml || '';
+}
+function backBtn(label, onclick){
+  return `<button class="wiz-back" onclick="${onclick}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>${label}</button>`;
+}
+function stepIndicator(n){
+  return `<span class="wiz-step-indicator">Step ${n} of 3</span>`;
+}
+
+/* ---------- Entry ---------- */
+function chooseQR(v){ wiz[v].path = 'qr'; showScreen(v, 'qr-scan', backBtn('Back', `showScreen('${v}','entry')`)); }
+function choosePoh(v){ wiz[v].path = 'poh'; showScreen(v, 'poh-instructions', backBtn('Back', `showScreen('${v}','entry')`)); }
+
+/* ---------- QR path ---------- */
+function simulateQRScan(v){ startQrSearch(v); }
+function startQrSearch(v){
+  showScreen(v, 'qr-search', backBtn('Back', `showScreen('${v}','qr-scan')`));
+  document.getElementById(v+'-qr-radar-core').className = 'radar-core';
+  document.getElementById(v+'-qr-search-heading').textContent = 'Searching for SN-88392011…';
+  document.getElementById(v+'-qr-search-sub').textContent = 'Make sure the device is powered on and nearby.';
+  clearTimeout(wiz[v]._qrTimer);
+  wiz[v]._qrTimer = setTimeout(()=>{
+    if(wiz[v].qrOutcome === 'found') qrSearchFound(v); else qrSearchTimeout(v);
+  }, 1500);
+}
+function qrSearchFound(v){
+  startQrVerify(v);
+}
+function qrSearchTimeout(v){
+  document.getElementById(v+'-qr-radar-core').className = 'radar-core failed';
+  document.getElementById(v+'-qr-search-heading').textContent = 'Device not found';
+  document.getElementById(v+'-qr-search-sub').innerHTML = "Make sure it's powered on and within range, then try again.";
+  const content = document.getElementById(v+'-screen-qr-search');
+  if(!document.getElementById(v+'-qr-retry-btn')){
+    const btn = document.createElement('button');
+    btn.id = v+'-qr-retry-btn';
+    btn.className = 'btn-primary-full';
+    btn.textContent = 'Try Again';
+    btn.onclick = () => startQrSearch(v);
+    content.appendChild(btn);
+  }
+}
+function startQrVerify(v){
+  showScreen(v, 'qr-verify', '');
+  document.getElementById(v+'-qr-verify-core').className = 'radar-core';
+  document.getElementById(v+'-qr-verify-spinner').style.display = 'block';
+  document.getElementById(v+'-qr-verify-heading').textContent = 'Verifying device identity…';
+  document.getElementById(v+'-qr-verify-sub').textContent = "Checking the device's factory credentials against the QR code you scanned.";
+  document.getElementById(v+'-qr-verify-actions').style.display = 'none';
+  document.getElementById(v+'-qr-verify-actions').innerHTML = '';
+  setTimeout(()=>{
+    if(wiz[v].verifyOutcome === 'ok') qrVerifyOk(v); else qrVerifyFail(v);
+  }, 1300);
+}
+function qrVerifyOk(v){
+  document.getElementById(v+'-qr-verify-spinner').style.display = 'none';
+  document.getElementById(v+'-qr-verify-core').className = 'radar-core success';
+  document.getElementById(v+'-qr-verify-core').innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+  document.getElementById(v+'-qr-verify-heading').textContent = 'Verified';
+  document.getElementById(v+'-qr-verify-sub').textContent = 'Device identity confirmed.';
+  setTimeout(()=>showMandatorySecurity(v), 900);
+}
+function qrVerifyFail(v){
+  document.getElementById(v+'-qr-verify-spinner').style.display = 'none';
+  document.getElementById(v+'-qr-verify-core').className = 'radar-core failed';
+  document.getElementById(v+'-qr-verify-core').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+  document.getElementById(v+'-qr-verify-heading').textContent = "Couldn't verify this device";
+  document.getElementById(v+'-qr-verify-sub').textContent = "The device didn't respond the way we expected. Try again in 30 seconds.";
+  const actions = document.getElementById(v+'-qr-verify-actions');
+  actions.style.display = 'block';
+  actions.innerHTML = '<button class="btn-primary-full" disabled id="'+v+'-qr-verify-retry">Try Again (30s)</button>';
+  let secs = 3; // compressed demo timer; copy still says 30s to match the real spec
+  const btn = document.getElementById(v+'-qr-verify-retry');
+  const iv = setInterval(()=>{
+    secs--;
+    if(secs <= 0){ clearInterval(iv); btn.disabled = false; btn.textContent = 'Try Again'; btn.onclick = () => startQrSearch(v); }
+  }, 1000);
+}
+
+function setQrOutcome(v, outcome, evt){
+  wiz[v].qrOutcome = outcome;
+  evt.target.parentElement.querySelectorAll('.dev-btn[data-outcome]').forEach(b=>b.classList.remove('current'));
+  evt.target.classList.add('current');
+}
+function setVerifyOutcome(v, outcome, evt){
+  wiz[v].verifyOutcome = outcome;
+  evt.target.parentElement.querySelectorAll('.dev-btn[data-outcome]').forEach(b=>b.classList.remove('current'));
+  evt.target.classList.add('current');
+}
+
+/* ---------- Power-On Hold path ---------- */
+function startPohSearch(v){
+  showScreen(v, 'poh-search', backBtn('Back', `showScreen('${v}','poh-instructions')`));
+  document.getElementById(v+'-poh-signal').className = 'signal-meter weak';
+  document.getElementById(v+'-poh-signal-label').textContent = 'Move closer…';
+  document.getElementById(v+'-poh-found-card').style.display = 'none';
+  document.getElementById(v+'-poh-connect-btn').style.display = 'none';
+  clearTimeout(wiz[v]._pohTimer);
+  wiz[v]._pohTimer = setTimeout(() => simulatePohClose(v), 1800);
+}
+function simulatePohClose(v){
+  document.getElementById(v+'-poh-signal').className = 'signal-meter strong';
+  document.getElementById(v+'-poh-signal-label').textContent = 'Close enough';
+  document.getElementById(v+'-poh-found-card').style.display = 'flex';
+  document.getElementById(v+'-poh-connect-btn').style.display = 'block';
+}
+function pohConnect(v){
+  if(v === 'a'){
+    openFullConfirm(v);
+  } else {
+    showScreen(v, 'poh-confirm', '');
+    resetConfirmUI(v);
+    startCountdown(v);
+  }
+}
+function cancelPohConfirm(v){
+  clearInterval(wiz[v].countdownTimer);
+  showScreen(v, 'poh-search', backBtn('Back', `showScreen('${v}','poh-instructions')`));
+}
+
+/* ---------- Physical-click confirmation (variant-specific container) ---------- */
+function openFullConfirm(v){
+  document.getElementById(v+'-confirm-full').classList.add('open');
+  resetConfirmUI(v);
+  startCountdown(v);
+}
+function closeFullConfirm(v){
+  document.getElementById(v+'-confirm-full').classList.remove('open');
+}
+function resetConfirmUI(v){
+  const prefix = v === 'a' ? 'a-' : 'b-';
+  document.getElementById(prefix+'confirm-heading').textContent = v === 'a' ? 'Press any button on the device now' : 'Press any button on the device';
+  document.getElementById(prefix+'confirm-sub').textContent = v === 'a' ? "You have 10 seconds to confirm you're physically at the device." : '10 seconds to confirm you’re at the device.';
+  document.getElementById(prefix+'cue-note').style.display = 'flex';
+  document.getElementById(prefix+'confirm-actions').innerHTML = '';
+  document.getElementById(prefix+'confirm-sim-btn').style.display = 'block';
+  const ring = document.getElementById(prefix+'countdown-ring');
+  ring.classList.remove('urgent');
+}
+function startCountdown(v){
+  wiz[v].countdownSeconds = 10;
+  updateCountdownUI(v);
+  clearInterval(wiz[v].countdownTimer);
+  wiz[v].countdownTimer = setInterval(()=>{
+    wiz[v].countdownSeconds--;
+    if(wiz[v].countdownSeconds <= 0){
+      clearInterval(wiz[v].countdownTimer);
+      countdownTimeout(v);
+      return;
+    }
+    updateCountdownUI(v);
+  }, 1000);
+}
+function updateCountdownUI(v){
+  const prefix = v === 'a' ? 'a-' : 'b-';
+  const s = wiz[v].countdownSeconds;
+  document.getElementById(prefix+'countdown-number').textContent = s;
+  const ring = document.getElementById(prefix+'countdown-ring');
+  const circumference = v === 'a' ? 326.7 : 226.2;
+  ring.setAttribute('stroke-dashoffset', String(circumference * (1 - s/10)));
+  ring.classList.toggle('urgent', s <= 3);
+}
+function simulateButtonPress(v){
+  clearInterval(wiz[v].countdownTimer);
+  const prefix = v === 'a' ? 'a-' : 'b-';
+  document.getElementById(prefix+'confirm-heading').textContent = 'Confirmed';
+  document.getElementById(prefix+'confirm-sub').textContent = 'Device authenticated.';
+  document.getElementById(prefix+'cue-note').style.display = 'none';
+  document.getElementById(prefix+'confirm-sim-btn').style.display = 'none';
+  document.getElementById(prefix+'countdown-number').innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2FB344" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+  setTimeout(()=>{
+    if(v === 'a') closeFullConfirm(v);
+    showMandatorySecurity(v);
+  }, 900);
+}
+function countdownTimeout(v){
+  const prefix = v === 'a' ? 'a-' : 'b-';
+  document.getElementById(prefix+'confirm-heading').textContent = "Time's up";
+  document.getElementById(prefix+'confirm-sub').textContent = 'No button press detected within 10 seconds.';
+  document.getElementById(prefix+'cue-note').style.display = 'none';
+  document.getElementById(prefix+'confirm-sim-btn').style.display = 'none';
+  document.getElementById(prefix+'countdown-number').innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+  const actions = document.getElementById(prefix+'confirm-actions');
+  actions.innerHTML = '<button class="btn-primary-full" disabled id="'+prefix+'retry-btn">Try Again (30s)</button>';
+  let secs = 3; // compressed demo timer; copy still says 30s to match the real spec
+  const btn = document.getElementById(prefix+'retry-btn');
+  const iv = setInterval(()=>{
+    secs--;
+    if(secs <= 0){
+      clearInterval(iv);
+      btn.disabled = false;
+      btn.textContent = 'Try Again';
+      btn.onclick = () => { if(v==='a') closeFullConfirm(v); pohConnect(v); };
+    }
+  }, 1000);
+}
+
+/* ---------- Mandatory login & password (no skip, no back) ---------- */
+function showMandatorySecurity(v){
+  showScreen(v, 'mandatory-security', '');
+}
+function togglePw(id){
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+function markMandatorySecDirty(v){
+  wiz[v].secDirty = true;
+  updateMandatorySecSaveState(v);
+}
+function validateMandatorySec(v){
+  const newpass = document.getElementById(v+'-sec-newpass');
+  const confirmpass = document.getElementById(v+'-sec-confirmpass');
+  const newErr = document.getElementById(v+'-sec-newpass-error');
+  const confirmErr = document.getElementById(v+'-sec-confirmpass-error');
+  const lengthOk = newpass.value.length >= 8 || newpass.value.length === 0;
+  newErr.classList.toggle('show', newpass.value.length > 0 && !lengthOk);
+  newpass.classList.toggle('invalid', newpass.value.length > 0 && !lengthOk);
+  const matchOk = confirmpass.value === newpass.value;
+  confirmErr.classList.toggle('show', confirmpass.value.length > 0 && !matchOk);
+  confirmpass.classList.toggle('invalid', confirmpass.value.length > 0 && !matchOk);
+  markMandatorySecDirty(v);
+}
+function updateMandatorySecSaveState(v){
+  const btn = document.getElementById(v+'-sec-save-btn');
+  const login = document.getElementById(v+'-sec-login').value.trim();
+  const newpass = document.getElementById(v+'-sec-newpass').value;
+  const confirmpass = document.getElementById(v+'-sec-confirmpass').value;
+  const valid = login.length > 0 && newpass.length >= 8 && confirmpass === newpass;
+  btn.disabled = !(wiz[v].secDirty && valid);
+}
+function trySaveMandatorySec(v){
+  updateMandatorySecSaveState(v);
+  const btn = document.getElementById(v+'-sec-save-btn');
+  if(btn.disabled) return;
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(()=>{
+    btn.classList.remove('loading');
+    showScreen(v, 'complete', '');
+  }, 900);
+}
+function finishSetup(v){
+  showToast(v, 'Would route directly to System Info (out of scope for this sketch).');
+}
+</script>
+</body>
+</html>

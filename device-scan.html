@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — Device Scan</title>
+<link rel="stylesheet" href="themes/default.css">
+<style>
+  /* Inline fallback copy of ../themes/default.css's :root variables.
+     The shared file stays the source of truth for future sketches; this
+     block only guards against preview contexts that can't resolve a
+     relative stylesheet link (e.g. a sandboxed/data-URL preview pane). */
+  :root {
+    --color-bg: #F4F5F7;
+    --color-surface: #FFFFFF;
+    --color-border: #E7E9EC;
+    --color-text: #1B2430;
+    --color-text-muted: rgba(27, 36, 48, 0.56);
+    --color-text-faint: rgba(27, 36, 48, 0.38);
+    --color-primary: #1B2430;
+    --color-primary-hover: #0F151D;
+    --color-accent: #3E7BFA;
+    --color-danger: #E5484D;
+    --color-success: #2FB344;
+    --color-locked: rgba(0, 0, 0, 0.38);
+    --color-danger-bg: #FDECEC;
+    --color-success-bg: #E9F8EC;
+    --color-accent-bg: #EAF1FF;
+    --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+    --text-display: 32px;
+    --text-heading: 20px;
+    --text-body: 15px;
+    --text-label: 13px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+    --radius-card: 20px;
+    --radius-sm: 12px;
+    --radius-pill: 999px;
+    --shadow-card: 0 16px 32px rgba(27, 36, 48, 0.06);
+    --shadow-card-sm: 0 6px 16px rgba(27, 36, 48, 0.05);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background: #DDE1E6;
+    color: var(--color-text);
+    padding-top: 52px; /* space for fixed variant nav */
+  }
+  button, select { font-family: var(--font-sans); }
+
+  /* ---------- Variant tab nav ---------- */
+  #variant-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
+    background: var(--color-primary);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 16px;
+    display: flex; gap: 8px; align-items: center;
+    font-family: var(--font-sans);
+    overflow-x: auto;
+  }
+  .variant-tab {
+    appearance: none; border: 1px solid rgba(255,255,255,0.18);
+    background: transparent; color: rgba(255,255,255,0.72);
+    padding: 7px 14px; border-radius: var(--radius-pill);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    white-space: nowrap; transition: all 0.15s ease;
+  }
+  .variant-tab:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+  .variant-tab.active { background: #fff; color: var(--color-primary); border-color: #fff; }
+
+  .variant { display: none; padding: 40px 16px 80px; }
+  .variant.active { display: block; }
+
+  /* ---------- Phone frame ---------- */
+  .phone {
+    width: 375px; margin: 0 auto;
+    background: var(--color-bg);
+    border-radius: 36px;
+    box-shadow: 0 30px 60px rgba(10,14,20,0.35), 0 0 0 10px #15181d, 0 0 0 11px #2a2e35;
+    overflow: hidden;
+    min-height: 760px;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .status-ios {
+    height: 28px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px; font-size: 13px; font-weight: 600; color: var(--color-text); flex-shrink: 0;
+  }
+
+  /* ---------- App bar ---------- */
+  .appbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px 14px;
+    flex-shrink: 0;
+  }
+  .appbar-title { font-size: var(--text-heading); font-weight: 600; letter-spacing: -0.2px; }
+  .appbar-sub { font-size: 12px; color: var(--color-text-muted); margin-top: 1px; }
+  .bug-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; color: var(--color-text-faint);
+    cursor: pointer; transition: background 0.15s ease;
+  }
+  .bug-btn:hover { background: rgba(27,36,48,0.06); color: var(--color-text-muted); }
+
+  /* ---------- Status banner ---------- */
+  .status-banner {
+    margin: 0 16px 14px; padding: 11px 14px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; gap: 9px;
+    font-size: var(--text-label); font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .status-banner.disconnected { background: #EEF0F2; color: var(--color-text-muted); }
+  .status-banner.disconnected .status-dot { background: var(--color-text-faint); }
+  .status-banner.connecting { background: var(--color-accent-bg); color: #2A5FD4; }
+  .status-banner.connecting .status-dot { background: var(--color-accent); animation: pulse-dot 1s ease-in-out infinite; }
+  .status-banner.connected { background: var(--color-success-bg); color: #1E8A30; }
+  .status-banner.connected .status-dot { background: var(--color-success); }
+  .status-banner.failed { background: var(--color-danger-bg); color: #C23237; }
+  .status-banner.failed .status-dot { background: var(--color-danger); }
+  @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  /* ---------- Content scroll area ---------- */
+  .content { flex: 1; overflow-y: auto; padding: 0 16px 24px; }
+
+  /* ---------- Sketch-only state switcher (lives OUTSIDE the phone mockup) ---------- */
+  .dev-strip {
+    width: 375px; margin: 14px auto 0; padding: 8px 10px;
+    border: 1px dashed rgba(27,36,48,0.28); border-radius: 10px;
+    background: rgba(255,255,255,0.5);
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  .dev-strip span { font-size: 10px; color: var(--color-text-faint); margin-right: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .dev-btn {
+    appearance: none; border: 1px solid var(--color-border); background: #fff;
+    border-radius: 999px; padding: 4px 10px; font-size: 11px; color: var(--color-text-muted);
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .dev-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .dev-btn.current { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+  /* ---------- Device list rows ---------- */
+  .device-card {
+    background: var(--color-surface); border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card-sm); margin-bottom: 10px;
+    padding: 14px 14px; display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    border: 1px solid transparent;
+  }
+  .device-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-card); }
+  .device-card:active { transform: translateY(0); }
+  .device-card.connecting { border-color: var(--color-accent); background: var(--color-accent-bg); }
+
+  .device-icon {
+    width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+    background: #EEF0F2; display: flex; align-items: center; justify-content: center;
+    color: var(--color-text-muted);
+  }
+  .device-info { flex: 1; min-width: 0; }
+  .device-name {
+    font-size: var(--text-body); font-weight: 500; color: var(--color-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .device-id {
+    font-size: 12px; color: var(--color-text-faint); margin-top: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+  .device-trailing { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .rssi-value { font-size: 12px; font-weight: 500; color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+  .rssi-bars { display: flex; align-items: flex-end; gap: 2px; height: 12px; }
+  .rssi-bars i { display: block; width: 3px; border-radius: 1px; background: var(--color-border); }
+  .rssi-bars i:nth-child(1) { height: 4px; }
+  .rssi-bars i:nth-child(2) { height: 7px; }
+  .rssi-bars i:nth-child(3) { height: 10px; }
+  .rssi-bars i:nth-child(4) { height: 13px; }
+  .rssi-strong .rssi-bars i { background: var(--color-success); }
+  .rssi-medium .rssi-bars i:nth-child(-n+3) { background: #D98A2B; }
+  .rssi-weak .rssi-bars i:nth-child(-n+1) { background: var(--color-danger); }
+
+  .section-label {
+    font-size: var(--text-label); font-weight: 500; color: var(--color-text-muted);
+    margin: 4px 2px 10px;
+  }
+
+  /* ---------- Empty / loading / error states ---------- */
+  .state-pane { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 20px; color: var(--color-text-muted); }
+  .state-pane.active { display: flex; }
+  .state-pane .icon-wrap { margin-bottom: 16px; color: var(--color-text-faint); }
+  .state-pane .msg { font-size: var(--text-body); font-weight: 500; color: var(--color-text); max-width: 240px; }
+  .state-pane .sub { font-size: var(--text-label); color: var(--color-text-faint); margin-top: 6px; max-width: 240px; }
+
+  .spinner {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 3px solid var(--color-border); border-top-color: var(--color-primary);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .list-wrap { display: none; }
+  .list-wrap.active { display: block; }
+
+  /* ---------- Variant A: radar hero ---------- */
+  .radar-hero { display: flex; flex-direction: column; align-items: center; padding: 22px 0 26px; }
+  .radar-stage { position: relative; width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; }
+  .radar-ring {
+    position: absolute; border-radius: 50%; border: 1.5px solid var(--color-accent);
+    opacity: 0; animation: radar-pulse 2.4s ease-out infinite;
+  }
+  .radar-ring.r1 { width: 60px; height: 60px; animation-delay: 0s; }
+  .radar-ring.r2 { width: 60px; height: 60px; animation-delay: 0.8s; }
+  .radar-ring.r3 { width: 60px; height: 60px; animation-delay: 1.6s; }
+  @keyframes radar-pulse {
+    0% { width: 60px; height: 60px; opacity: 0.65; }
+    100% { width: 150px; height: 150px; opacity: 0; }
+  }
+  .radar-core {
+    position: relative; z-index: 2; width: 60px; height: 60px; border-radius: 50%;
+    background: var(--color-primary); display: flex; align-items: center; justify-content: center;
+    color: #fff; box-shadow: 0 10px 24px rgba(27,36,48,0.28);
+  }
+  .radar-caption { font-size: var(--text-body); font-weight: 500; margin-top: 18px; }
+  .radar-sub { font-size: var(--text-label); color: var(--color-text-faint); margin-top: 3px; }
+
+  /* ---------- Variant B: utilitarian dense rows ---------- */
+  .dense-row {
+    background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+    margin-bottom: 0; border-radius: 0; box-shadow: none;
+    padding: 12px 14px;
+  }
+  .dense-list { background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card-sm); overflow: hidden; }
+  .dense-list .dense-row:last-child { border-bottom: none; }
+  .dense-list .dense-row:hover { background: #FAFBFC; }
+
+  /* ---------- Variant C: inline pulse in banner ---------- */
+  .inline-pulse { position: relative; width: 8px; height: 8px; }
+  .inline-pulse .dot { position: absolute; inset: 0; border-radius: 50%; background: currentColor; }
+  .inline-pulse .ring { position: absolute; inset: -5px; border-radius: 50%; border: 1.5px solid currentColor; opacity: 0; animation: inline-pulse-ring 1.6s ease-out infinite; }
+  @keyframes inline-pulse-ring { 0% { opacity: 0.6; transform: scale(0.6); } 100% { opacity: 0; transform: scale(1.6); } }
+
+  .grid-count { font-size: 12px; color: var(--color-text-faint); margin: 0 2px 10px; display: flex; justify-content: space-between; align-items: center; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: absolute; left: 16px; right: 16px; bottom: 18px;
+    background: var(--color-primary); color: #fff; padding: 12px 16px;
+    border-radius: var(--radius-sm); font-size: var(--text-label); font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(80px); opacity: 0; transition: all 0.25s ease; z-index: 50;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .caption-row { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 16px 46px; max-width: 375px; }
+
+  /* ---------- Sketch toolbar ---------- */
+  #sketch-tools {
+    position: fixed; bottom: 12px; right: 12px; z-index: 9999;
+    font-family: system-ui; font-size: 12px; background: rgba(0,0,0,0.75); color: #fff;
+    padding: 8px 12px; border-radius: 10px; opacity: 0.45; transition: opacity 0.2s ease;
+    display: flex; gap: 10px; align-items: center;
+  }
+  #sketch-tools:hover { opacity: 1; }
+  #sketch-tools select { font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div id="variant-a" class="variant active">
+  <div class="phone">
+    <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+    <div class="appbar">
+      <div>
+        <div class="appbar-title">WW BlueCon</div>
+        <div class="appbar-sub">Scan for devices</div>
+      </div>
+      <button class="bug-btn" onclick="toast('a', 'Debug screen — not in release build')" title="Debug">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="6"/><path d="M12 7V5M8.5 8.5 6 6M15.5 8.5 18 6M6 13H3M21 13h-3M6.5 18 4 20M17.5 18 20 20M9 13h6"/></svg>
+      </button>
+    </div>
+
+    <div id="a-banner" class="status-banner connecting">
+      <span class="status-dot"></span><span id="a-banner-text">Scanning…</span>
+    </div>
+
+    <div class="content">
+      <!-- populated -->
+      <div id="a-populated" class="list-wrap active">
+        <div class="radar-hero">
+          <div class="radar-stage">
+            <div class="radar-ring r1"></div>
+            <div class="radar-ring r2"></div>
+            <div class="radar-ring r3"></div>
+            <div class="radar-core">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 6.5 17.5 17.5 12 22V2l5.5 4.5L6.5 17.5"/></svg>
+            </div>
+          </div>
+          <div class="radar-caption">Scanning nearby</div>
+          <div class="radar-sub">4 devices found</div>
+        </div>
+
+        <div class="section-label">Nearby devices</div>
+
+        <div class="device-card" onclick="connectDevice('a', this, 'WW-GATE-7C3A1F')">
+          <div class="device-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></div>
+          <div class="device-info">
+            <div class="device-name">WW-GATE-7C3A1F</div>
+            <div class="device-id">A4:C1:38:2D:9E:01</div>
+          </div>
+          <div class="device-trailing rssi-strong">
+            <span class="rssi-value">−42 dBm</span>
+            <span class="rssi-bars"><i></i><i></i><i></i><i></i></span>
+          </div>
+        </div>
+
+        <div class="device-card" onclick="connectDevice('a', this, 'WW-EDGE-B01C44')">
+          <div class="device-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></div>
+          <div class="device-info">
+            <div class="device-name">WW-EDGE-B01C44</div>
+            <div class="device-id">A4:C1:38:2D:A1:17</div>
+          </div>
+          <div class="device-trailing rssi-medium">
+            <span class="rssi-value">−58 dBm</span>
+            <span class="rssi-bars"><i></i><i></i><i></i><i></i></span>
+          </div>
+        </div>
+
+        <div class="device-card" onclick="connectDevice('a', this, 'WW-EDGE-19FA02')">
+          <div class="device-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></div>
+          <div class="device-info">
+            <div class="device-name">WW-EDGE-19FA02</div>
+            <div class="device-id">A4:C1:38:2D:B3:9C</div>
+          </div>
+          <div class="device-trailing rssi-weak">
+            <span class="rssi-value">−81 dBm</span>
+            <span class="rssi-bars"><i></i><i></i><i></i><i></i></span>
+          </div>
+        </div>
+
+        <div class="device-card" onclick="connectDevice('a', this, '(unnamed device)')">
+          <div class="device-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></div>
+          <div class="device-info">
+            <div class="device-name">(unnamed device)</div>
+            <div class="device-id">F0:18:98:AA:12:3B</div>
+          </div>
+          <div class="device-trailing rssi-weak">
+            <span class="rssi-value">−88 dBm</span>
+            <span class="rssi-bars"><i></i><i></i><i></i><i></i></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center; padding:14px 16px 4px;">
+        <a href="init-wizard.html" style="font-size:13px; color:var(--color-accent); text-decoration:none; font-weight:500;">New device? Set it up →</a>
+      </div>
+
+      <!-- loading -->
+      <div id="a-loading" class="state-pane"><div class="spinner"></div></div>
+
+      <!-- empty -->
+      <div id="a-empty" class="state-pane">
+        <div class="icon-wrap"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 6.5 17.5 17.5 12 22V2l5.5 4.5L6.5 17.5" opacity="0.5"/></svg></div>
+        <div class="msg">No devices found — keep scanning</div>
+        <div class="sub">Make sure the unit is powered and within range.</div>
+      </div>
+
+      <!-- error -->
+      <div id="a-error" class="state-pane">
+        <div class="icon-wrap" style="color:var(--color-danger)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+        <div class="msg">Scan error: Bluetooth adapter unavailable</div>
+      </div>
+    </div>
+
+    <div id="a-toast" class="toast"></div>
+  </div>
+</div>
+
+<script>
+function showVariant(id, evt) {
+  document.querySelectorAll('.variant').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.variant-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('variant-' + id).classList.add('active');
+  evt.target.classList.add('active');
+}
+
+function setState(v, state, evt) {
+  ['loading','empty','populated','error'].forEach(s => {
+    const el = document.getElementById(v + '-' + s);
+    if (!el) return;
+    if (s === 'populated') { el.classList.toggle('active', s === state); }
+    else { el.classList.toggle('active', s === state); }
+  });
+  document.querySelectorAll('#variant-' + v + ' .dev-btn').forEach(b => b.classList.remove('current'));
+  evt.target.classList.add('current');
+
+  const banner = document.getElementById(v + '-banner');
+  const bannerText = document.getElementById(v + '-banner-text');
+  banner.className = 'status-banner';
+  if (state === 'error') { banner.classList.add('failed'); bannerText.textContent = 'Connection failed — tap a device to retry'; }
+  else if (state === 'empty') { banner.classList.add('disconnected'); bannerText.textContent = 'Disconnected'; }
+  else { banner.classList.add('connecting'); bannerText.textContent = 'Scanning…'; }
+  if (v === 'c') {
+    const pulse = banner.querySelector('.inline-pulse');
+    if (pulse) banner.insertBefore(pulse, banner.firstChild);
+  }
+}
+
+function toast(v, msg) {
+  const el = document.getElementById(v + '-toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function connectDevice(v, rowEl, name) {
+  document.querySelectorAll('#variant-' + v + ' .device-card').forEach(c => c.classList.remove('connecting'));
+  rowEl.classList.add('connecting');
+  toast(v, 'Connecting to ' + name + '…');
+
+  const banner = document.getElementById(v + '-banner');
+  const bannerText = document.getElementById(v + '-banner-text');
+  banner.className = 'status-banner connecting';
+  if (v === 'c') banner.innerHTML = '<span class="inline-pulse"><span class="dot"></span><span class="ring"></span></span><span id="c-banner-text">Connecting…</span>';
+  else { banner.innerHTML = '<span class="status-dot"></span><span id="' + v + '-banner-text">Connecting…</span>'; }
+
+  setTimeout(() => {
+    const b2 = document.getElementById(v + '-banner');
+    b2.className = 'status-banner connected';
+    b2.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
+    toast(v, 'Connected — confirming device identity…');
+    setTimeout(() => { window.location.href = 'confirm-device.html'; }, 700);
+  }, 1400);
+}
+</script>
+</body>
+</html>

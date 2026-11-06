@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — Device</title>
+<link rel="stylesheet" href="themes/default.css">
+<style>
+  :root {
+    --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
+    --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
+    --color-danger: #E5484D; --color-success: #2FB344;
+    --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
+    --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+    --text-heading: 20px; --text-body: 15px; --text-label: 13px;
+    --radius-card: 20px; --radius-sm: 12px; --radius-pill: 999px;
+    --shadow-card: 0 16px 32px rgba(27, 36, 48, 0.06); --shadow-card-sm: 0 6px 16px rgba(27, 36, 48, 0.05);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: #DDE1E6; color: var(--color-text); padding: 40px 16px 80px; }
+  button, select, input { font-family: var(--font-sans); }
+
+  .phone { width: 375px; margin: 0 auto; background: var(--color-bg); border-radius: 36px; box-shadow: 0 30px 60px rgba(10,14,20,0.35), 0 0 0 10px #15181d, 0 0 0 11px #2a2e35; overflow: hidden; height: 760px; display: flex; flex-direction: column; position: relative; }
+  .status-ios { height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 13px; font-weight: 600; color: var(--color-text); flex-shrink: 0; }
+
+  .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
+  .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
+  .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
+  .shell-header-right { display: flex; align-items: center; gap: 10px; }
+  .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
+  .exit-device-btn:hover { background: rgba(27, 36, 48, 0.08); color: var(--color-text); }
+  .screen-title { font-size: var(--text-heading); font-weight: 600; padding: 10px 16px 10px; flex-shrink: 0; }
+
+  .settings-tabs { display: flex; margin: 0 16px 16px; background: #EAECEF; border-radius: var(--radius-sm); padding: 3px; flex-shrink: 0; }
+  .settings-tabs button { flex: 1; appearance: none; border: none; background: transparent; color: var(--color-text-muted); font-size: 12.5px; font-weight: 600; padding: 8px 4px; border-radius: 9px; cursor: pointer; transition: all 0.2s ease; }
+  .settings-tabs button.active { background: #fff; color: var(--color-primary); box-shadow: 0 2px 6px rgba(27,36,48,0.1); }
+  .settings-tab-panel { display: none; }
+  .settings-tab-panel.active { display: block; }
+
+  .content { flex: 1; overflow-y: auto; padding-bottom: 90px; position: relative; }
+
+  .section-card { background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card-sm); margin: 0 16px 16px; padding: 18px; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--color-text-faint); margin-bottom: 14px; }
+
+  .safety-callout { display: flex; gap: 10px; background: #FBEFDD; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; align-items: flex-start; }
+  .safety-callout svg { color: #9A5A12; flex-shrink: 0; margin-top: 1px; }
+  .safety-callout-text { font-size: 12.5px; color: #6B4712; line-height: 1.5; }
+  .safety-callout.danger-tint { background: #FDECEC; }
+  .safety-callout.danger-tint svg { color: #A62328; }
+  .safety-callout.danger-tint .safety-callout-text { color: #8A2227; }
+
+  .field-group { margin-bottom: 14px; }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-label { font-size: 12px; color: var(--color-text-muted); margin-bottom: 6px; display: block; font-weight: 500; }
+  .field-input { width: 100%; padding: 11px 13px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px; color: var(--color-text); background: var(--color-surface); transition: border-color 0.15s ease; }
+  .field-input:focus { outline: none; border-color: var(--color-accent); }
+  .field-input.invalid { border-color: var(--color-danger); }
+  .field-helper { font-size: 11px; color: var(--color-text-faint); font-style: italic; margin-top: 5px; line-height: 1.4; }
+  .field-error { font-size: 11px; color: var(--color-danger); margin-top: 5px; display: none; }
+  .field-error.show { display: block; }
+  .field-input-wrap { position: relative; }
+  .field-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--color-text-faint); padding: 6px; display: flex; align-items: center; justify-content: center; }
+  .field-eye:hover { color: var(--color-text-muted); }
+
+  .save-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 16px; gap: 12px; }
+  .btn-save { appearance: none; border: none; background: var(--color-primary); color: #fff; font-size: 14px; font-weight: 600; padding: 10px 22px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 8px; }
+  .btn-save:disabled { background: #C9CCD1; color: #fff; cursor: not-allowed; }
+  .btn-save .spinner { display: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; animation: spin 0.8s linear infinite; }
+  .btn-save.loading .spinner { display: inline-block; }
+
+  /* ---------- Firmware section ---------- */
+  .fw-version-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .fw-version-label { font-size: 12px; color: var(--color-text-muted); margin-bottom: 2px; }
+  .fw-version-value { font-size: 16px; font-weight: 600; }
+  .fw-update-badge { background: var(--color-accent-bg); color: var(--color-accent); font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: var(--radius-pill); }
+  .btn-primary-row { width: 100%; appearance: none; border: none; background: var(--color-primary); color: #fff; font-size: 14px; font-weight: 600; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; }
+  .btn-primary-row:hover { background: var(--color-primary-hover); }
+
+  /* ---------- Action rows (diagnostics/restart/reset) ---------- */
+  .action-row { width: 100%; display: flex; align-items: center; gap: 12px; background: none; border: none; border-top: 1px solid var(--color-border); padding: 13px 2px; cursor: pointer; text-align: left; }
+  .section-card .action-row:first-of-type { border-top: none; padding-top: 0; }
+  .action-row-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--color-accent-bg); color: var(--color-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .action-row.danger .action-row-icon { background: var(--color-danger-bg); color: var(--color-danger); }
+  .action-row-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .action-row-title { font-size: 14px; font-weight: 600; }
+  .action-row.danger .action-row-title { color: var(--color-danger); }
+  .action-row-sub { font-size: 11.5px; color: var(--color-text-faint); }
+  .action-row-chevron { color: var(--color-text-faint); flex-shrink: 0; }
+
+  .confirm-reveal { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(.4,0,.2,1), opacity 0.3s ease; margin-top: 0; }
+  .confirm-reveal.open { max-height: 220px; opacity: 1; margin: 4px 0 10px; }
+  .confirm-reveal-inner { background: #F1F3F6; border-radius: 12px; padding: 14px; }
+  .confirm-reveal-inner.danger { background: #FDECEC; }
+  .confirm-reveal-text { font-size: 12.5px; color: var(--color-text-muted); line-height: 1.5; margin-bottom: 10px; }
+  .confirm-reveal-inner.danger .confirm-reveal-text { color: #8A2227; }
+  .confirm-reveal-actions { display: flex; gap: 10px; }
+  .btn-confirm-cancel { flex: 1; appearance: none; border: 1.5px solid var(--color-border); background: #fff; color: var(--color-text); font-size: 13px; font-weight: 600; padding: 9px; border-radius: 10px; cursor: pointer; }
+  .btn-confirm-go { flex: 1; appearance: none; border: none; background: var(--color-danger); color: #fff; font-size: 13px; font-weight: 600; padding: 9px; border-radius: 10px; cursor: pointer; }
+  .btn-confirm-go-neutral { flex: 1; appearance: none; border: none; background: var(--color-primary); color: #fff; font-size: 13px; font-weight: 600; padding: 9px; border-radius: 10px; cursor: pointer; }
+
+  /* ---------- Device History ---------- */
+  .history-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--color-border); }
+  .section-card .history-row:first-of-type { border-top: none; padding-top: 0; }
+  .history-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--color-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--color-text-faint); }
+  .history-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .history-name { font-size: 13.5px; font-weight: 600; }
+  .history-sub { font-size: 11px; color: var(--color-text-faint); }
+  .history-reconnect { appearance: none; border: 1.5px solid var(--color-border); background: #fff; color: var(--color-accent); font-size: 11.5px; font-weight: 600; padding: 6px 11px; border-radius: var(--radius-pill); cursor: pointer; flex-shrink: 0; }
+  .history-reconnect:hover { border-color: var(--color-accent); }
+  .history-hint { font-size: 11px; color: var(--color-text-faint); margin-top: 10px; line-height: 1.4; }
+
+  /* ---------- OTA scrim + bottom sheet ---------- */
+  .scrim { position: absolute; inset: 0; background: rgba(15, 18, 24, 0.4); opacity: 0; visibility: hidden; transition: opacity 0.25s ease; z-index: 40; }
+  .scrim.show { opacity: 1; visibility: visible; }
+  .ota-sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--color-surface); border-radius: 22px 22px 0 0; box-shadow: 0 -12px 32px rgba(27,36,48,0.18); z-index: 41; padding: 10px 18px 20px; transform: translateY(100%); visibility: hidden; transition: transform 0.3s cubic-bezier(.4,0,.2,1), visibility 0.3s; max-height: 86%; overflow-y: auto; }
+  .ota-sheet.open { transform: translateY(0); visibility: visible; }
+  .sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--color-border); margin: 2px auto 14px; }
+  .sheet-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+  .sheet-version-row { font-size: 12.5px; color: var(--color-text-muted); margin-bottom: 16px; }
+  .sheet-version-row strong { color: var(--color-text); }
+
+  .ota-path-card { display: flex; align-items: center; gap: 12px; border: 1.5px solid var(--color-border); border-radius: 14px; padding: 13px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s ease; }
+  .ota-path-card:hover { border-color: var(--color-accent); }
+  .ota-path-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--color-accent-bg); color: var(--color-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ota-path-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ota-path-title { font-size: 14px; font-weight: 600; }
+  .ota-path-sub { font-size: 11.5px; color: var(--color-text-faint); line-height: 1.35; }
+  .ota-path-chevron { color: var(--color-text-faint); flex-shrink: 0; }
+  .ota-no-wifi-note { font-size: 11.5px; color: var(--color-text-faint); font-style: italic; margin-bottom: 10px; line-height: 1.4; }
+
+  .ota-confirm-path { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+  .ota-confirm-actions { display: flex; gap: 10px; margin-top: 4px; }
+
+  .ota-stage { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
+  .ota-stage-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; flex-shrink: 0; }
+  .ota-stage-icon.spinner-lg { background: var(--color-accent-bg); }
+  .ota-stage-icon.spinner-lg .spin-ring { width: 26px; height: 26px; border-radius: 50%; border: 3px solid rgba(62,123,250,0.25); border-top-color: var(--color-accent); animation: spin 0.9s linear infinite; }
+  .ota-stage-icon.success { background: var(--color-success-bg); color: var(--color-success); }
+  .ota-stage-icon.failed { background: var(--color-danger-bg); color: var(--color-danger); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ota-stage-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .ota-stage-sub { font-size: 12px; color: var(--color-text-muted); line-height: 1.5; margin-bottom: 16px; max-width: 280px; }
+  .ota-stepper { display: flex; gap: 4px; width: 100%; margin-bottom: 6px; }
+  .ota-stepper-seg { flex: 1; height: 5px; border-radius: 3px; background: var(--color-border); position: relative; overflow: hidden; transition: background-color 0.2s ease; }
+  .ota-stepper-seg.done { background: var(--color-accent); }
+  .ota-stepper-seg.current { background: rgba(62,123,250,0.35); }
+  .ota-stepper-seg.current::after { content: ''; position: absolute; inset: 0; width: 50%; background: var(--color-accent); animation: stepshimmer 1s ease-in-out infinite; }
+  .ota-stepper-seg.failed { background: var(--color-danger); }
+  @keyframes stepshimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+  .ota-stepper-labels { display: flex; gap: 4px; width: 100%; margin-bottom: 14px; }
+  .ota-stepper-label-item { flex: 1; font-size: 8.5px; text-align: center; color: var(--color-text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ota-stepper-label-item.current { color: var(--color-accent); font-weight: 700; }
+  .ota-stepper-label-item.done { color: var(--color-text-muted); font-weight: 600; }
+  .ota-stepper-label-item.failed { color: var(--color-danger); font-weight: 700; }
+  .progress-bar-track { width: 100%; height: 8px; border-radius: 999px; background: var(--color-border); overflow: hidden; position: relative; }
+  .progress-bar-fill { height: 100%; background: var(--color-accent); border-radius: 999px; width: 0%; transition: width 0.2s linear; }
+  .progress-bar-track.indeterminate .progress-bar-fill { width: 40% !important; position: absolute; background: repeating-linear-gradient(45deg, var(--color-accent) 0 10px, #AFC8FB 10px 20px); animation: indet 0.9s linear infinite; }
+  @keyframes indet { from { left: -40%; } to { left: 100%; } }
+  .ota-pct { font-size: 12px; font-weight: 600; color: var(--color-text-muted); margin-top: 8px; }
+  .ota-stage-actions { display: flex; gap: 10px; width: 100%; margin-top: 18px; }
+  .ota-stage-actions button { flex: 1; appearance: none; border: none; font-size: 13.5px; font-weight: 600; padding: 11px; border-radius: 10px; cursor: pointer; }
+  .btn-ota-done { background: var(--color-primary); color: #fff; }
+  .btn-ota-retry { background: var(--color-danger); color: #fff; }
+
+  .ota-full { position: absolute; left: 0; right: 0; top: 28px; bottom: 0; background: var(--color-bg); z-index: 50; display: flex; flex-direction: column; visibility: hidden; opacity: 0; transition: opacity 0.25s ease; }
+  .ota-full.open { visibility: visible; opacity: 1; }
+  .ota-full-header { padding: 16px 20px 4px; font-size: 15px; font-weight: 600; flex-shrink: 0; }
+  .ota-full-lock-note { display: flex; gap: 8px; align-items: flex-start; margin: 0 20px 10px; padding: 10px 12px; border-radius: 10px; background: #FDECEC; flex-shrink: 0; }
+  .ota-full-lock-note svg { color: #A62328; flex-shrink: 0; margin-top: 1px; }
+  .ota-full-lock-note span { font-size: 11px; color: #8A2227; line-height: 1.45; }
+  .ota-full-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px 28px 40px; }
+
+  .bottom-nav { display: flex; position: absolute; left: 20px; right: 20px; bottom: 18px; z-index: 20; background: rgba(255, 255, 255, 0.68); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); border-radius: 26px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 12px 32px rgba(27, 36, 48, 0.18), 0 2px 8px rgba(27, 36, 48, 0.08); padding: 7px 4px; transition: visibility 0.1s; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; color: var(--color-text-faint); cursor: pointer; background: none; border: none; font-family: var(--font-sans); min-width: 0; }
+  .nav-icon { display: flex; align-items: center; justify-content: center; width: 50px; height: 28px; border-radius: var(--radius-pill); background: transparent; transition: background-color 0.25s cubic-bezier(.4,0,.2,1), color 0.2s ease; color: inherit; }
+  .nav-item.active .nav-icon { background: rgba(27, 36, 48, 0.1); }
+  .nav-item.active { color: var(--color-primary); }
+  .nav-label { font-size: 9.5px; font-weight: 500; white-space: nowrap; }
+  .nav-item.active .nav-label { font-weight: 600; }
+
+  .dev-strip { width: 375px; margin: 14px auto 0; padding: 8px 10px; border: 1px dashed rgba(27,36,48,0.28); border-radius: 10px; background: rgba(255,255,255,0.5); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .dev-strip span.dev-label { font-size: 10px; color: var(--color-text-faint); margin-right: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .dev-btn { appearance: none; border: 1px solid var(--color-border); background: #fff; border-radius: 999px; padding: 4px 10px; font-size: 11px; color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; }
+  .dev-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .dev-btn.current { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+  .toast { position: absolute; left: 16px; right: 16px; bottom: 90px; background: var(--color-primary); color: #fff; padding: 12px 16px; border-radius: var(--radius-sm); font-size: var(--text-label); font-weight: 500; transform: translateY(40px); opacity: 0; transition: all 0.25s ease; z-index: 60; box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--color-danger); }
+
+  .caption-row { margin: 16px auto 0; max-width: 375px; font-size: 12px; color: #5b6572; }
+  #sketch-tools { position: fixed; bottom: 12px; right: 12px; z-index: 9999; font-family: system-ui; font-size: 12px; background: rgba(0,0,0,0.75); color: #fff; padding: 8px 12px; border-radius: 10px; opacity: 0.45; transition: opacity 0.2s ease; display: flex; gap: 10px; align-items: center; }
+  #sketch-tools:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+  <div class="shell-header">
+    <span class="role-badge">Central Unit</span>
+    <div class="shell-header-right">
+      <span class="conn-status"><span class="status-dot"></span>Connected</span>
+      <a class="exit-device-btn" href="device-scan.html" title="Exit device"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a>
+    </div>
+  </div>
+  <div class="screen-title">Device</div>
+  <div class="settings-tabs">
+    <button class="active" onclick="showTab('fwlog',event)">Firmware &amp; Log</button>
+    <button onclick="showTab('security',event)">Security</button>
+  </div>
+
+  <div class="content">
+    <!-- ============ Tab 1: Firmware & Log (sketch 009 winner A) ============ -->
+    <div class="settings-tab-panel active" id="panel-fwlog">
+      <div class="section-card">
+        <div class="section-heading">FIRMWARE</div>
+        <div class="fw-version-row">
+          <div>
+            <div class="fw-version-label">Current Version</div>
+            <div class="fw-version-value" id="fw-version-value">v2.4.1</div>
+          </div>
+          <span class="fw-update-badge" id="update-badge">Update available</span>
+        </div>
+        <button class="btn-primary-row" onclick="openOta()">Update Firmware</button>
+      </div>
+
+      <div class="section-card">
+        <div class="section-heading">DIAGNOSTICS &amp; RESET</div>
+
+        <button class="action-row" id="log-btn" onclick="downloadLog()">
+          <span class="action-row-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
+          <span class="action-row-text">
+            <span class="action-row-title" id="log-title">Download Diagnostic Log</span>
+            <span class="action-row-sub">Generates a fresh log from the connected device</span>
+          </span>
+        </button>
+
+        <button class="action-row" onclick="openRestart()">
+          <span class="action-row-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5.5 10a7 7 0 0 1 12-3.5L20 9M18.5 14a7 7 0 0 1-12 3.5L4 15"/></svg></span>
+          <span class="action-row-text">
+            <span class="action-row-title">Restart Device</span>
+            <span class="action-row-sub">Briefly unreachable, settings unaffected</span>
+          </span>
+          <span class="action-row-chevron">›</span>
+        </button>
+        <div class="confirm-reveal" id="restart-confirm">
+          <div class="confirm-reveal-inner">
+            <div class="confirm-reveal-text">The device will be unreachable for about 30 seconds while it restarts. No settings are changed.</div>
+            <div class="confirm-reveal-actions">
+              <button class="btn-confirm-cancel" onclick="closeRestart()">Cancel</button>
+              <button class="btn-confirm-go-neutral" onclick="doRestart()">Restart</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="action-row danger" onclick="openReset()">
+          <span class="action-row-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 6"/></svg></span>
+          <span class="action-row-text">
+            <span class="action-row-title">Factory Reset</span>
+            <span class="action-row-sub">Erases all settings — cannot be undone</span>
+          </span>
+          <span class="action-row-chevron">›</span>
+        </button>
+        <div class="confirm-reveal" id="reset-confirm">
+          <div class="confirm-reveal-inner danger">
+            <div class="confirm-reveal-text">This erases <strong>all</strong> settings — network, radio, security, pairing — and returns the device to its out-of-box state. This cannot be undone.</div>
+            <div class="confirm-reveal-actions">
+              <button class="btn-confirm-cancel" onclick="closeReset()">Cancel</button>
+              <button class="btn-confirm-go" onclick="doReset()">Factory Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-heading">DEVICE HISTORY</div>
+        <div class="history-row">
+          <span class="history-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 2v4M16 2v4M4 10h16"/></svg></span>
+          <span class="history-text"><span class="history-name">Front Gate — Entrance A</span><span class="history-sub">MASTER-200 · last seen 2 days ago</span></span>
+          <button class="history-reconnect" onclick="historyReconnect()">Reconnect</button>
+        </div>
+        <div class="history-row">
+          <span class="history-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 2v4M16 2v4M4 10h16"/></svg></span>
+          <span class="history-text"><span class="history-name">Loading Dock Edge</span><span class="history-sub">EDGE-100 · last seen 1 week ago</span></span>
+          <button class="history-reconnect" onclick="historyReconnect()">Reconnect</button>
+        </div>
+        <div class="history-hint">Saved devices from past visits — reconnect directly instead of rescanning.</div>
+      </div>
+    </div>
+
+    <!-- ============ Tab 2: Security (sketch 008 winner B) ============ -->
+    <div class="settings-tab-panel" id="panel-security">
+      <div class="section-card">
+        <div class="section-heading">Device Login</div>
+
+        <div class="safety-callout danger-tint">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1.6 1.6 0 0 0 1.4 2.5h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
+          <span class="safety-callout-text">This is the login for this physical device. If you forget the new password, you'll need a factory reset to get back in.</span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Login</label>
+          <input class="field-input" id="sec-login" value="installer" oninput="markDirtySec()">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">New Password</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="sec-newpass" style="padding-right:42px;" oninput="validateSec()">
+            <button type="button" class="field-eye" onclick="togglePw('sec-newpass')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="field-helper">At least 8 characters.</div>
+          <div class="field-error" id="sec-newpass-error">Password must be at least 8 characters</div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:0;">
+          <label class="field-label">Confirm Password</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="sec-confirmpass" style="padding-right:42px;" oninput="validateSec()">
+            <button type="button" class="field-eye" onclick="togglePw('sec-confirmpass')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="field-error" id="sec-confirmpass-error">Passwords don't match</div>
+        </div>
+
+        <div class="save-row">
+          <button class="btn-save" id="sec-save-btn" disabled onclick="openSecConfirm()">
+            <span class="spinner"></span><span>Save</span>
+          </button>
+        </div>
+
+        <div class="confirm-reveal" id="sec-confirm-reveal">
+          <div class="confirm-reveal-inner danger">
+            <div class="confirm-reveal-text">Change this device's login now? Make sure you'll remember the new password — there's no recovery without a factory reset.</div>
+            <div class="confirm-reveal-actions">
+              <button class="btn-confirm-cancel" onclick="closeSecConfirm()">Cancel</button>
+              <button class="btn-confirm-go" onclick="trySaveSec()">Change Login</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scrim" id="scrim" onclick="closeSheet()"></div>
+  <div class="ota-sheet" id="sheet">
+    <div class="ota-sheet-panel" data-step="select">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Update Firmware</div>
+      <div class="sheet-version-row">v2.4.1 → <strong>v2.5.0</strong> available</div>
+      <div class="ota-path-card" id="wifi-card" onclick="selectPath('wifi')">
+        <span class="ota-path-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.5a10 10 0 0 1 14 0M8 15.5a6 6 0 0 1 8 0M11.5 18.5a1.5 1.5 0 0 1 1-.01"/></svg></span>
+        <span class="ota-path-text"><span class="ota-path-title">Update via Wi-Fi</span><span class="ota-path-sub">Device downloads &amp; installs itself over Wi-Fi — fastest if available</span></span>
+        <span class="ota-path-chevron">›</span>
+      </div>
+      <div class="ota-no-wifi-note" id="no-wifi-note" style="display:none">This device has no Wi-Fi module — only direct Bluetooth transfer is available.</div>
+      <div class="ota-path-card" onclick="selectPath('ble')">
+        <span class="ota-path-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 6.5 17.5 15 12 20v-16l5.5 4.5-11 8.5"/></svg></span>
+        <span class="ota-path-text"><span class="ota-path-title">Update via Bluetooth</span><span class="ota-path-sub">Direct transfer, ~10MB, no network needed (~1–2 min)</span></span>
+        <span class="ota-path-chevron">›</span>
+      </div>
+      <button class="btn-confirm-cancel" style="width:100%;margin-top:4px;" onclick="closeSheet()">Cancel</button>
+    </div>
+    <div class="ota-sheet-panel" data-step="confirm" style="display:none">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Confirm Update</div>
+      <div class="ota-confirm-path" id="confirm-path-label">Via Bluetooth (direct transfer)</div>
+      <div class="safety-callout danger-tint">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        <div class="safety-callout-text" id="confirm-callout-text">Keep the device powered and stay close to it for the entire transfer — don't walk away, close the app, or cut power. The device will restart automatically once the update finishes.</div>
+      </div>
+      <div class="ota-confirm-actions">
+        <button class="btn-confirm-cancel" onclick="backToSelect()">Back</button>
+        <button class="btn-confirm-go" onclick="startOta()">Start Update</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ota-full" id="ota-full">
+    <div class="ota-full-header">Firmware Update</div>
+    <div class="ota-full-lock-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+      <span>Don't close or background this app — leaving may interrupt the update. Stay on this screen until it finishes.</span>
+    </div>
+    <div class="ota-full-body">
+      <div class="ota-stage" id="ota-stage">
+        <div class="ota-stage-icon spinner-lg" id="ota-icon"><span class="spin-ring"></span></div>
+        <div class="ota-stage-title" id="ota-title">Transferring firmware…</div>
+        <div class="ota-stage-sub" id="ota-sub">Via Bluetooth — keep the device powered, stay close, and keep the app open.</div>
+        <div class="ota-stepper" id="ota-stepper"></div>
+        <div class="ota-stepper-labels" id="ota-stepper-labels"></div>
+        <div class="progress-bar-track" id="ota-track"><div class="progress-bar-fill" id="ota-fill" style="width:0%"></div></div>
+        <div class="ota-pct" id="ota-pct">0%</div>
+        <div class="ota-stage-actions" id="ota-actions" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav" id="bottom-nav">
+    <a class="nav-item" href="system-info.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 11h1v6h1"/></svg></span><span class="nav-label">System Info</span></a>
+    <a class="nav-item" href="monitoring.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h3.5l1.8-6 3 11 2.2-8.5 1.5 3.5H21"/></svg></span><span class="nav-label">Monitoring</span></a>
+    <a class="nav-item" href="settings.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span><span class="nav-label">Settings</span></a>
+    <a class="nav-item active" href="device.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 2v4M16 2v4M4 10h16"/></svg></span><span class="nav-label">Device</span></a>
+  </div>
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+function showTab(tab, evt){
+  document.querySelectorAll('.settings-tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  document.querySelectorAll('.settings-tabs button').forEach(b=>b.classList.remove('active'));
+  evt.currentTarget.classList.add('active');
+}
+
+function showToast(msg, isError){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ---------- Restart / Factory Reset confirm-reveal ---------- */
+function openRestart(){ document.getElementById('restart-confirm').classList.add('open'); closeReset(); }
+function closeRestart(){ document.getElementById('restart-confirm').classList.remove('open'); }
+function doRestart(){
+  closeRestart();
+  showToast('Restarting device…');
+  setTimeout(()=>showToast('Device back online.'), 1500);
+}
+function openReset(){ document.getElementById('reset-confirm').classList.add('open'); closeRestart(); }
+function closeReset(){ document.getElementById('reset-confirm').classList.remove('open'); }
+function doReset(){
+  closeReset();
+  showToast('Factory reset complete — device returned to out-of-box state.');
+}
+
+/* ---------- Diagnostic log ---------- */
+function downloadLog(){
+  const title = document.getElementById('log-title');
+  const original = title.textContent;
+  title.textContent = 'Generating log…';
+  setTimeout(()=>{
+    title.textContent = original;
+    showToast('Log downloaded — ww-bluecon-20261105-1423.txt');
+  }, 900);
+}
+
+/* ---------- Device History ---------- */
+function historyReconnect(){
+  showToast('Would reconnect directly — Device History isn’t its own sketch yet.');
+}
+
+/* ---------- OTA state machine ---------- */
+const ota = { hasWifi: true, failSim: false };
+
+function openOta(){
+  ota.path = null;
+  showSheet(true);
+  showSheetStep('select');
+}
+function closeSheet(){ showSheet(false); }
+function showSheet(open){
+  document.getElementById('scrim').classList.toggle('show', open);
+  document.getElementById('sheet').classList.toggle('open', open);
+}
+function showSheetStep(step){
+  document.querySelectorAll('#sheet .ota-sheet-panel').forEach(p=>{
+    p.style.display = (p.dataset.step === step) ? '' : 'none';
+  });
+  if(step === 'select'){
+    const noWifi = ota.hasWifi === false;
+    document.getElementById('wifi-card').style.display = noWifi ? 'none' : '';
+    document.getElementById('no-wifi-note').style.display = noWifi ? '' : 'none';
+  }
+}
+function backToSelect(){ showSheetStep('select'); }
+
+function selectPath(path){
+  ota.path = path;
+  document.getElementById('confirm-path-label').textContent = path === 'wifi'
+    ? 'Via Wi-Fi (device downloads itself)'
+    : 'Via Bluetooth (direct transfer)';
+  document.getElementById('confirm-callout-text').textContent = path === 'wifi'
+    ? 'The app sends the update command over Bluetooth, then the device downloads and installs it itself over Wi-Fi. Keep the device powered and stay nearby until it finishes — it will restart automatically once the update completes.'
+    : 'Keep the device powered and stay close to it for the entire transfer — don’t walk away, close the app, or cut power. The device will restart automatically once the update finishes.';
+  showSheetStep('confirm');
+}
+
+function startOta(){
+  showSheet(false);
+  beginProgress();
+}
+
+const BLE_STAGES = [
+  { key: 'transfer', label: 'Transfer', determinate: true, incr: () => 4 + Math.random()*5,
+    title: p => `Transferring firmware… ${p}%`,
+    sub: 'Via Bluetooth — keep the device powered, stay close, and keep the app open.',
+    mini: 'Transferring firmware…' },
+  { key: 'verify', label: 'Verify', determinate: false, ticks: 4,
+    title: () => 'Verifying firmware integrity…',
+    sub: 'Checking the received image before installing. Keep the device powered.',
+    mini: 'Verifying firmware…' },
+  { key: 'apply', label: 'Apply', determinate: true, incr: () => 16 + Math.random()*8,
+    title: p => `Applying update… ${p}%`,
+    sub: 'Do not power off the device — it’s installing the update now.',
+    mini: 'Applying update…' },
+  { key: 'reboot', label: 'Reboot', determinate: false, ticks: 5,
+    title: () => 'Restarting device…',
+    sub: 'Reconnecting once the device comes back online. Keep the app open.',
+    mini: 'Restarting device…' },
+];
+const WIFI_STAGES = [
+  { key: 'sending', label: 'Send', determinate: true, incr: () => 18,
+    title: p => `Sending update command… ${p}%`,
+    sub: 'Over Bluetooth — keep the device powered and stay connected until this finishes sending.',
+    mini: 'Sending update command…' },
+  { key: 'transfer', label: 'Transfer', determinate: false, ticks: 6,
+    title: () => 'Device downloading over Wi-Fi…',
+    sub: 'The device finishes this on its own over Wi-Fi — you don’t need to stay in Bluetooth range, but keep it powered.',
+    mini: 'Device downloading over Wi-Fi…' },
+  { key: 'verify', label: 'Verify', determinate: false, ticks: 4,
+    title: () => 'Verifying firmware integrity…',
+    sub: 'The device checks the downloaded image before installing. Keep it powered.',
+    mini: 'Verifying firmware…' },
+  { key: 'apply', label: 'Apply', determinate: true, incr: () => 16 + Math.random()*8,
+    title: p => `Applying update… ${p}%`,
+    sub: 'Do not power off the device — it’s installing the update now.',
+    mini: 'Applying update…' },
+  { key: 'reboot', label: 'Reboot', determinate: false, ticks: 5,
+    title: () => 'Restarting device…',
+    sub: 'Reconnecting once the device comes back online. Keep the app open.',
+    mini: 'Restarting device…' },
+];
+function stagesFor(){ return ota.path === 'wifi' ? WIFI_STAGES : BLE_STAGES; }
+
+function beginProgress(){
+  ota.stageIndex = 0;
+  ota.pct = 0;
+  ota.stageTick = 0;
+  ota.failed = false;
+  renderProgressContainer(true);
+  renderStepper();
+  renderStage();
+  clearInterval(ota.timer);
+  ota.timer = setInterval(tick, 220);
+}
+
+function renderProgressContainer(show){
+  document.getElementById('ota-full').classList.toggle('open', show);
+  document.getElementById('bottom-nav').style.visibility = show ? 'hidden' : 'visible';
+  document.getElementById('ota-actions').style.display = 'none';
+}
+
+function renderStepper(failedIndex){
+  const stages = stagesFor();
+  const segHtml = stages.map((s,i)=>{
+    let cls = 'ota-stepper-seg';
+    if(failedIndex !== undefined && i === failedIndex) cls += ' failed';
+    else if(i < ota.stageIndex || (failedIndex !== undefined && i < failedIndex)) cls += ' done';
+    else if(i === ota.stageIndex && failedIndex === undefined) cls += ' current';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+  const labelHtml = stages.map((s,i)=>{
+    let cls = 'ota-stepper-label-item';
+    if(failedIndex !== undefined && i === failedIndex) cls += ' failed';
+    else if(i < ota.stageIndex || (failedIndex !== undefined && i < failedIndex)) cls += ' done';
+    else if(i === ota.stageIndex && failedIndex === undefined) cls += ' current';
+    return `<div class="${cls}">${s.label}</div>`;
+  }).join('');
+  document.getElementById('ota-stepper').innerHTML = segHtml;
+  document.getElementById('ota-stepper-labels').innerHTML = labelHtml;
+}
+
+function tick(){
+  const stages = stagesFor();
+  const stage = stages[ota.stageIndex];
+  const failNow = ota.failSim && !ota.failed && stage.key === 'transfer' && (
+    stage.determinate ? ota.pct >= 52 : ota.stageTick >= Math.ceil(stage.ticks/2)
+  );
+  if(failNow){
+    ota.failed = true;
+    ota.failSim = false;
+    clearInterval(ota.timer);
+    setFailedUI();
+    return;
+  }
+  if(stage.determinate){
+    ota.pct = Math.min(100, ota.pct + stage.incr());
+    if(ota.pct >= 100){ advanceStage(); return; }
+  } else {
+    ota.stageTick++;
+    if(ota.stageTick >= stage.ticks){ advanceStage(); return; }
+  }
+  renderStage();
+}
+
+function advanceStage(){
+  const stages = stagesFor();
+  ota.stageIndex++;
+  ota.pct = 0;
+  ota.stageTick = 0;
+  if(ota.stageIndex >= stages.length){
+    clearInterval(ota.timer);
+    setDoneUI();
+    return;
+  }
+  renderStepper();
+  renderStage();
+}
+
+function renderStage(){
+  const stage = stagesFor()[ota.stageIndex];
+  const pctRounded = Math.round(ota.pct);
+  const indeterminate = !stage.determinate;
+  document.getElementById('ota-title').textContent = stage.title(pctRounded);
+  document.getElementById('ota-sub').textContent = stage.sub;
+  document.getElementById('ota-track').classList.toggle('indeterminate', indeterminate);
+  document.getElementById('ota-fill').style.width = indeterminate ? '40%' : pctRounded + '%';
+  document.getElementById('ota-pct').textContent = indeterminate ? '' : pctRounded + '%';
+  document.getElementById('ota-pct').style.display = indeterminate ? 'none' : '';
+  renderStepper();
+}
+
+function setDoneUI(){
+  renderStepper();
+  document.getElementById('ota-icon').className = 'ota-stage-icon success';
+  document.getElementById('ota-icon').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>';
+  document.getElementById('ota-title').textContent = 'Firmware updated';
+  document.getElementById('ota-sub').textContent = 'Now running v2.5.0 — the device restarted automatically.';
+  document.getElementById('ota-track').classList.remove('indeterminate');
+  document.getElementById('ota-fill').style.width = '100%';
+  document.getElementById('ota-pct').style.display = '';
+  document.getElementById('ota-pct').textContent = '100%';
+  document.getElementById('ota-actions').style.display = 'flex';
+  document.getElementById('ota-actions').innerHTML = '<button class="btn-ota-done" onclick="closeOta()">Done</button>';
+  document.getElementById('fw-version-value').textContent = 'v2.5.0';
+  document.getElementById('update-badge').style.display = 'none';
+}
+
+function setFailedUI(){
+  renderStepper(ota.stageIndex);
+  document.getElementById('ota-icon').className = 'ota-stage-icon failed';
+  document.getElementById('ota-icon').innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+  document.getElementById('ota-title').textContent = 'Update interrupted';
+  document.getElementById('ota-sub').textContent = 'Firmware unchanged — safe to retry from the beginning.';
+  document.getElementById('ota-track').classList.remove('indeterminate');
+  document.getElementById('ota-fill').style.width = '0%';
+  document.getElementById('ota-pct').style.display = '';
+  document.getElementById('ota-pct').textContent = '';
+  document.getElementById('ota-actions').style.display = 'flex';
+  document.getElementById('ota-actions').innerHTML =
+    '<button class="btn-confirm-cancel" onclick="closeOta()">Cancel</button>' +
+    '<button class="btn-ota-retry" onclick="retryOta()">Retry from Beginning</button>';
+}
+
+function retryOta(){
+  document.getElementById('ota-icon').className = 'ota-stage-icon spinner-lg';
+  document.getElementById('ota-icon').innerHTML = '<span class="spin-ring"></span>';
+  beginProgress();
+}
+
+function closeOta(){
+  renderProgressContainer(false);
+}
+
+/* ---------- Dev controls (Firmware) ---------- */
+function toggleWifiModule(e){
+  ota.hasWifi = !ota.hasWifi;
+  e.target.textContent = 'Wi-Fi module: ' + (ota.hasWifi ? 'Present' : 'Absent');
+  e.target.classList.toggle('current', ota.hasWifi);
+  if(document.getElementById('sheet').classList.contains('open')) showSheetStep('select');
+}
+function toggleFailSim(e){
+  ota.failSim = !ota.failSim;
+  e.target.textContent = 'Simulate interruption: ' + (ota.failSim ? 'On' : 'Off');
+  e.target.classList.toggle('current', ota.failSim);
+}
+function resetDemo(){
+  clearInterval(ota.timer);
+  ota.hasWifi = true; ota.failSim = false;
+  document.getElementById('wifi-toggle').textContent = 'Wi-Fi module: Present';
+  document.getElementById('wifi-toggle').classList.add('current');
+  document.getElementById('failsim-toggle').textContent = 'Simulate interruption: Off';
+  document.getElementById('failsim-toggle').classList.remove('current');
+  renderProgressContainer(false);
+  showSheet(false);
+  document.getElementById('fw-version-value').textContent = 'v2.4.1';
+  document.getElementById('update-badge').style.display = '';
+  closeRestart();
+  closeReset();
+}
+
+/* ---------- Security (sketch 008 winner B) ---------- */
+const secState = { dirty: false, failNext: false };
+
+function togglePw(id){
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+function markDirtySec(){
+  secState.dirty = true;
+  updateSecSaveState();
+}
+function validateSec(){
+  const newpass = document.getElementById('sec-newpass');
+  const confirmpass = document.getElementById('sec-confirmpass');
+  const newErr = document.getElementById('sec-newpass-error');
+  const confirmErr = document.getElementById('sec-confirmpass-error');
+  const lengthOk = newpass.value.length >= 8 || newpass.value.length === 0;
+  newErr.classList.toggle('show', newpass.value.length > 0 && !lengthOk);
+  newpass.classList.toggle('invalid', newpass.value.length > 0 && !lengthOk);
+  const matchOk = confirmpass.value === newpass.value;
+  confirmErr.classList.toggle('show', confirmpass.value.length > 0 && !matchOk);
+  confirmpass.classList.toggle('invalid', confirmpass.value.length > 0 && !matchOk);
+  markDirtySec();
+}
+function updateSecSaveState(){
+  const btn = document.getElementById('sec-save-btn');
+  const login = document.getElementById('sec-login').value.trim();
+  const newpass = document.getElementById('sec-newpass').value;
+  const confirmpass = document.getElementById('sec-confirmpass').value;
+  const valid = login.length > 0 && newpass.length >= 8 && confirmpass === newpass;
+  btn.disabled = !(secState.dirty && valid);
+}
+function openSecConfirm(){
+  updateSecSaveState();
+  const btn = document.getElementById('sec-save-btn');
+  if(btn.disabled) return;
+  document.getElementById('sec-confirm-reveal').classList.add('open');
+}
+function closeSecConfirm(){
+  document.getElementById('sec-confirm-reveal').classList.remove('open');
+}
+function toggleSecFail(e){
+  secState.failNext = !secState.failNext;
+  e.target.textContent = 'Fail next save: ' + (secState.failNext ? 'On' : 'Off');
+  e.target.classList.toggle('current', secState.failNext);
+}
+function trySaveSec(){
+  updateSecSaveState();
+  const btn = document.getElementById('sec-save-btn');
+  if(!secState.dirty) return;
+  document.getElementById('sec-confirm-reveal').classList.remove('open');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(()=>{
+    btn.classList.remove('loading');
+    if(secState.failNext){
+      showToast("Couldn't save — check your connection and try again.", true);
+      btn.disabled = false;
+    } else {
+      showToast('Saved — sign in with your new password next time.');
+      secState.dirty = false;
+      btn.disabled = true;
+    }
+  }, 900);
+}
+</script>
+</body>
+</html>

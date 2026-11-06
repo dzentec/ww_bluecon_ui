@@ -1,0 +1,50 @@
+/* WW BlueCon — shared sketch theme
+   Sourced from lib/main.dart's WwBlueConApp theme + SCREENS.md's Shared Design System table.
+   Do not invent new colors/fonts here — this IS the locked app theme, not a fresh palette. */
+
+:root {
+  /* Colors */
+  --color-bg: #F4F5F7;
+  --color-surface: #FFFFFF;
+  --color-border: #E7E9EC;
+  --color-text: #1B2430;
+  --color-text-muted: rgba(27, 36, 48, 0.56);
+  --color-text-faint: rgba(27, 36, 48, 0.38);
+
+  --color-primary: #1B2430;       /* primary buttons, key status text, active nav/role badge */
+  --color-primary-hover: #0F151D;
+  --color-accent: #3E7BFA;        /* link/info, secondary/outlined button borders */
+  --color-danger: #E5484D;        /* errors, validation failures */
+  --color-success: #2FB344;       /* "Saved" confirmations */
+  --color-locked: rgba(0, 0, 0, 0.38); /* mutual-exclusivity-locked fields — never red */
+
+  --color-danger-bg: #FDECEC;
+  --color-success-bg: #E9F8EC;
+  --color-accent-bg: #EAF1FF;
+
+  /* Typography — platform default stack stands in for Roboto/San Francisco */
+  --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --text-display: 32px;  /* w700 */
+  --text-heading: 20px;  /* w600 */
+  --text-body: 15px;     /* w400 */
+  --text-label: 13px;    /* w500 */
+
+  /* Spacing — 4px grid */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Shapes */
+  --radius-card: 20px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 16px 32px rgba(27, 36, 48, 0.06);
+  --shadow-card-sm: 0 6px 16px rgba(27, 36, 48, 0.05);
+}

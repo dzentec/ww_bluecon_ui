@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — Settings</title>
+<link rel="stylesheet" href="themes/default.css">
+<style>
+  :root {
+    --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
+    --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
+    --color-danger: #E5484D; --color-success: #2FB344;
+    --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
+    --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+    --text-heading: 20px; --text-body: 15px; --text-label: 13px;
+    --radius-card: 20px; --radius-sm: 12px; --radius-pill: 999px;
+    --shadow-card: 0 16px 32px rgba(27, 36, 48, 0.06); --shadow-card-sm: 0 6px 16px rgba(27, 36, 48, 0.05);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: #DDE1E6; color: var(--color-text); padding: 40px 16px 80px; }
+  button, select, input { font-family: var(--font-sans); }
+
+  .phone { width: 375px; margin: 0 auto; background: var(--color-bg); border-radius: 36px; box-shadow: 0 30px 60px rgba(10,14,20,0.35), 0 0 0 10px #15181d, 0 0 0 11px #2a2e35; overflow: hidden; height: 760px; display: flex; flex-direction: column; position: relative; }
+  .status-ios { height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 13px; font-weight: 600; color: var(--color-text); flex-shrink: 0; }
+
+  .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
+  .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
+  .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
+  .shell-header-right { display: flex; align-items: center; gap: 10px; }
+  .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
+  .exit-device-btn:hover { background: rgba(27, 36, 48, 0.08); color: var(--color-text); }
+  .screen-title { font-size: var(--text-heading); font-weight: 600; padding: 10px 16px 10px; flex-shrink: 0; }
+
+  .settings-tabs { display: flex; margin: 0 16px 16px; background: #EAECEF; border-radius: var(--radius-sm); padding: 3px; flex-shrink: 0; }
+  .settings-tabs button { flex: 1; appearance: none; border: none; background: transparent; color: var(--color-text-muted); font-size: 11.5px; font-weight: 600; padding: 8px 2px; border-radius: 9px; cursor: pointer; transition: all 0.2s ease; }
+  .settings-tabs button.active { background: #fff; color: var(--color-primary); box-shadow: 0 2px 6px rgba(27,36,48,0.1); }
+  .settings-tab-panel { display: none; }
+  .settings-tab-panel.active { display: block; }
+
+  .content { flex: 1; overflow-y: auto; padding-bottom: 90px; position: relative; }
+
+  .section-card { background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card-sm); margin: 0 16px 16px; padding: 18px; }
+  .section-heading { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; color: var(--color-text-faint); margin-bottom: 14px; }
+  .section-intro { font-size: 12px; color: var(--color-text-faint); font-style: italic; line-height: 1.5; margin: -8px 0 16px; }
+  .card-head-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-head-row .section-heading { margin-bottom: 0; }
+  .icon-btn { appearance: none; border: none; background: #F0F1F3; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; }
+  .icon-btn:hover { background: #E7E9EC; color: var(--color-text); }
+  .icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
+
+  .safety-callout { display: flex; gap: 10px; background: #FBEFDD; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; align-items: flex-start; }
+  .safety-callout svg { color: #9A5A12; flex-shrink: 0; margin-top: 1px; }
+  .safety-callout-text { font-size: 12.5px; color: #6B4712; line-height: 1.5; }
+
+  .field-group { margin-bottom: 14px; }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-label { font-size: 12px; color: var(--color-text-muted); margin-bottom: 6px; display: block; font-weight: 500; }
+  .field-input, .field-select-full { width: 100%; padding: 11px 13px; border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px; color: var(--color-text); background: var(--color-surface); transition: border-color 0.15s ease; }
+  .field-input:focus, .field-select-full:focus { outline: none; border-color: var(--color-accent); }
+  .field-input:disabled, .field-select-full:disabled { color: var(--color-text-faint); background: #F4F5F7; border-color: var(--color-border); cursor: not-allowed; }
+  .field-input.invalid { border-color: var(--color-danger); }
+  .field-helper { font-size: 11px; color: var(--color-text-faint); font-style: italic; margin-top: 5px; line-height: 1.4; }
+  .field-error { font-size: 11px; color: var(--color-danger); margin-top: 5px; display: none; }
+  .field-error.show { display: block; }
+
+  .radio-group { display: flex; gap: 20px; }
+  .radio-option { display: flex; align-items: center; gap: 7px; font-size: 14px; color: var(--color-text); cursor: pointer; }
+  .radio-option input[type=radio] { width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; margin: 0; }
+
+  .toggle-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+  .toggle-row:last-of-type { margin-bottom: 0; }
+  .toggle-row .field-text { min-width: 0; }
+  .toggle-row .field-label { margin-bottom: 3px; }
+  .switch { position: relative; width: 42px; height: 25px; flex-shrink: 0; display: inline-block; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch .track { position: absolute; inset: 0; background: var(--color-border); border-radius: 999px; transition: background 0.2s ease; cursor: pointer; }
+  .switch .thumb { position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; background: #fff; border-radius: 50%; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+  .switch input:checked ~ .track { background: var(--color-primary); }
+  .switch input:checked ~ .track .thumb { transform: translateX(17px); }
+
+  .mode-segmented, .segmented-inline { display: flex; background: #EAECEF; border-radius: 10px; padding: 3px; margin-bottom: 16px; }
+  .mode-segmented button, .segmented-inline button { flex: 1; appearance: none; border: none; background: transparent; color: var(--color-text-muted); font-size: 12.5px; font-weight: 600; padding: 8px 4px; border-radius: 7px; cursor: pointer; transition: all 0.2s ease; }
+  .mode-segmented button.active, .segmented-inline button.active { background: #fff; color: var(--color-primary); box-shadow: 0 2px 6px rgba(27,36,48,0.1); }
+  .segmented-inline { margin-bottom: 0; }
+
+  .mode-fields { display: none; }
+  .mode-fields.active { display: block; }
+
+  .subsection-divider { height: 1px; background: var(--color-border); margin: 16px 0; }
+  .subsection-heading { font-size: 13px; font-weight: 600; color: var(--color-text); margin-bottom: 10px; }
+
+  .seg-2col { display: flex; gap: 10px; }
+  .seg-btn-2line { flex: 1; appearance: none; border: 1.5px solid var(--color-border); background: #fff; border-radius: 12px; padding: 10px 8px; cursor: pointer; text-align: center; transition: all 0.15s ease; }
+  .seg-btn-2line:hover { border-color: var(--color-accent); }
+  .seg-btn-2line.active { border-color: var(--color-primary); background: var(--color-primary); }
+  .seg-btn-2line .seg-main { display: block; font-size: 13.5px; font-weight: 600; color: var(--color-text); }
+  .seg-btn-2line.active .seg-main { color: #fff; }
+  .seg-btn-2line .seg-sub { display: block; font-size: 10.5px; color: var(--color-text-faint); margin-top: 2px; }
+  .seg-btn-2line.active .seg-sub { color: rgba(255,255,255,0.65); }
+
+  .io-port-row { padding: 13px 0; border-top: 1px solid var(--color-border); }
+  .io-port-row:first-of-type { border-top: none; }
+  .io-port-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .io-port-name { font-size: 14px; font-weight: 600; color: var(--color-text); }
+  .io-seg { display: flex; background: #EAECEF; border-radius: 8px; padding: 2px; width: 150px; }
+  .io-seg button { flex: 1; appearance: none; border: none; background: transparent; color: var(--color-text-muted); font-size: 11.5px; font-weight: 600; padding: 6px 2px; border-radius: 6px; cursor: pointer; }
+  .io-seg button.active { background: #fff; color: var(--color-primary); box-shadow: 0 1px 4px rgba(27,36,48,0.12); }
+  .io-supervision { margin-top: 2px; }
+  .io-supervision select { font-size: 13px; padding: 9px 11px; }
+
+  .save-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 16px; gap: 12px; }
+  .save-row .field-error { margin-top: 0; margin-right: auto; }
+  .btn-save { appearance: none; border: none; background: var(--color-primary); color: #fff; font-size: 14px; font-weight: 600; padding: 10px 22px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 8px; }
+  .btn-save:disabled { background: #C9CCD1; color: #fff; cursor: not-allowed; }
+  .btn-save .spinner { display: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; animation: spin 0.8s linear infinite; }
+  .btn-save.loading .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- Paired edge rows + full-screen pairing (sketch 005 winner A) ---------- */
+  .edge-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--color-border); transition: opacity 0.3s ease; }
+  .edge-row:first-of-type { border-top: none; }
+  .edge-icon { width: 36px; height: 36px; border-radius: 10px; background: #EEF0F2; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); flex-shrink: 0; }
+  .edge-info { flex: 1; min-width: 0; }
+  .edge-name { font-size: 14px; font-weight: 500; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .edge-role { font-size: 11px; color: var(--color-text-faint); margin-top: 1px; }
+  .edge-signal { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+  .edge-signal-value { font-size: 11px; font-weight: 500; color: var(--color-text-muted); }
+  .rssi-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
+  .rssi-bars i { display: block; width: 2.5px; border-radius: 1px; background: var(--color-border); }
+  .rssi-bars i:nth-child(1) { height: 3px; } .rssi-bars i:nth-child(2) { height: 6px; } .rssi-bars i:nth-child(3) { height: 9px; }
+  .rssi-bars.good i { background: var(--color-success); }
+  .edge-delete { appearance: none; border: none; background: none; color: var(--color-text-faint); cursor: pointer; padding: 6px; flex-shrink: 0; transition: color 0.15s ease; }
+  .edge-delete:hover { color: var(--color-danger); }
+  .edge-empty { text-align: center; padding: 20px 10px; color: var(--color-text-faint); font-size: 13px; }
+  .edge-confirm { display: none; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 0; border-top: 1px solid var(--color-border); background: var(--color-danger-bg); margin: 0 -18px; padding-left: 18px; padding-right: 18px; }
+  .edge-confirm.show { display: flex; }
+  .edge-confirm-text { font-size: 13px; color: var(--color-text); flex: 1; }
+  .edge-confirm-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-text { appearance: none; border: none; background: none; font-size: 12.5px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+  .btn-text.cancel { color: var(--color-text-muted); }
+  .btn-text.remove { color: #fff; background: var(--color-danger); }
+  .btn-outline-full { appearance: none; width: 100%; background: transparent; color: var(--color-primary); border: 1.5px dashed var(--color-border); font-size: 14px; font-weight: 600; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 14px; transition: all 0.15s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-outline-full:hover { border-color: var(--color-accent); color: var(--color-accent); border-style: solid; }
+
+  .radar-stage { position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .radar-ring { position: absolute; border-radius: 50%; border: 1.5px solid var(--color-accent); opacity: 0; animation: radar-pulse 2.4s ease-out infinite; }
+  @keyframes radar-pulse { 0% { width: var(--ring-start, 60px); height: var(--ring-start, 60px); opacity: 0.65; } 100% { width: var(--ring-end, 150px); height: var(--ring-end, 150px); opacity: 0; } }
+  .radar-core { position: relative; z-index: 2; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 10px 24px rgba(27,36,48,0.28); }
+  .radar-core.success { background: var(--color-success); animation: none; }
+
+  .pair-overlay { position: absolute; left: 0; right: 0; top: 28px; bottom: 0; background: var(--color-bg); z-index: 30; visibility: hidden; display: flex; flex-direction: column; padding: 16px; opacity: 0; transition: opacity 0.25s ease, visibility 0.25s; }
+  .pair-overlay.show { visibility: visible; opacity: 1; }
+  .pair-cancel { align-self: flex-start; background: none; border: none; color: var(--color-text-muted); font-size: 14px; font-weight: 500; padding: 8px 4px; cursor: pointer; }
+  .pair-overlay-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 20px 60px; }
+  .pair-heading { font-size: 18px; font-weight: 600; margin-top: 26px; }
+  .pair-sub { font-size: 13px; color: var(--color-text-muted); margin-top: 8px; max-width: 260px; line-height: 1.5; }
+  .pair-found-name { font-size: 15px; font-weight: 600; margin-top: 4px; }
+  .pair-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 260px; margin-top: 26px; }
+  .btn-primary-full { appearance: none; border: none; width: 100%; background: var(--color-primary); color: #fff; font-size: 15px; font-weight: 600; padding: 14px; border-radius: var(--radius-sm); cursor: pointer; }
+  .btn-ghost-full { appearance: none; border: none; width: 100%; background: transparent; color: var(--color-text-muted); font-size: 14px; font-weight: 500; padding: 10px; cursor: pointer; }
+  .pair-state { display: none; }
+  .pair-state.active { display: flex; flex-direction: column; align-items: center; }
+
+  .bottom-nav { display: flex; position: absolute; left: 20px; right: 20px; bottom: 18px; z-index: 20; background: rgba(255, 255, 255, 0.68); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); border-radius: 26px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 12px 32px rgba(27, 36, 48, 0.18), 0 2px 8px rgba(27, 36, 48, 0.08); padding: 7px 4px; transition: visibility 0.1s; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; color: var(--color-text-faint); cursor: pointer; background: none; border: none; font-family: var(--font-sans); min-width: 0; }
+  .nav-icon { display: flex; align-items: center; justify-content: center; width: 50px; height: 28px; border-radius: var(--radius-pill); background: transparent; transition: background-color 0.25s cubic-bezier(.4,0,.2,1), color 0.2s ease; color: inherit; }
+  .nav-item.active .nav-icon { background: rgba(27, 36, 48, 0.1); }
+  .nav-item.active { color: var(--color-primary); }
+  .nav-label { font-size: 9.5px; font-weight: 500; white-space: nowrap; }
+  .nav-item.active .nav-label { font-weight: 600; }
+
+  .dev-strip { width: 375px; margin: 14px auto 0; padding: 8px 10px; border: 1px dashed rgba(27,36,48,0.28); border-radius: 10px; background: rgba(255,255,255,0.5); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .dev-strip span.dev-label { font-size: 10px; color: var(--color-text-faint); margin-right: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .dev-btn { appearance: none; border: 1px solid var(--color-border); background: #fff; border-radius: 999px; padding: 4px 10px; font-size: 11px; color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; }
+  .dev-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  .dev-btn.current { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+  .toast { position: absolute; left: 16px; right: 16px; bottom: 90px; background: var(--color-primary); color: #fff; padding: 12px 16px; border-radius: var(--radius-sm); font-size: var(--text-label); font-weight: 500; transform: translateY(40px); opacity: 0; transition: all 0.25s ease; z-index: 50; box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--color-danger); }
+
+  .caption-row { margin: 16px auto 0; max-width: 375px; font-size: 12px; color: #5b6572; }
+  #sketch-tools { position: fixed; bottom: 12px; right: 12px; z-index: 9999; font-family: system-ui; font-size: 12px; background: rgba(0,0,0,0.75); color: #fff; padding: 8px 12px; border-radius: 10px; opacity: 0.45; transition: opacity 0.2s ease; display: flex; gap: 10px; align-items: center; }
+  #sketch-tools:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+  <div class="shell-header">
+    <span class="role-badge" id="role-badge">Central Unit</span>
+    <div class="shell-header-right">
+      <span class="conn-status"><span class="status-dot"></span>Connected</span>
+      <a class="exit-device-btn" href="device-scan.html" title="Exit device"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a>
+    </div>
+  </div>
+  <div class="screen-title">Settings</div>
+  <div class="settings-tabs">
+    <button class="active" id="tab-role-btn" onclick="showTab('role',event)">Radio</button>
+    <button onclick="showTab('dataport',event)">Data Port</button>
+    <button onclick="showTab('io',event)">I/O Ports</button>
+    <button onclick="showTab('network',event)">Network</button>
+  </div>
+
+  <div class="content">
+    <!-- ============ Tab 1: Radio (gate) / Relay Failsafe (edge) ============ -->
+    <div class="settings-tab-panel active" id="panel-role">
+
+      <div id="role-gate-content">
+        <div class="section-card">
+          <div class="section-heading">Radio Configuration</div>
+          <div class="field-group">
+            <label class="field-label">Frequency Band</label>
+            <div class="segmented-inline" style="margin-bottom:16px;">
+              <button type="button" class="active" onclick="setSeg('band',event)">915 MHz</button>
+              <button type="button" onclick="setSeg('band',event)">868 MHz</button>
+            </div>
+            <div class="field-helper">915 MHz is the Americas ISM band; 868 MHz is the European ISM band. Match your installation's region — this isn't a performance preference.</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Channel</label>
+            <select class="field-select-full" onchange="markDirty('radio')">
+              <option>Auto</option><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Radio Network Password</label>
+            <input class="field-input" type="password" id="radio-pass" value="wwradio2026" oninput="validateRadioPass()">
+            <div class="field-helper">At least 8 characters.</div>
+            <div class="field-error" id="radio-pass-error">Password must be at least 8 characters</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Transmit Power</label>
+            <div class="segmented-inline">
+              <button type="button" onclick="setSeg('power',event)">Low</button>
+              <button type="button" class="active" onclick="setSeg('power',event)">Medium</button>
+              <button type="button" onclick="setSeg('power',event)">High</button>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;margin-top:14px;">
+            <label class="field-label">Performance Profile</label>
+            <div class="segmented-inline">
+              <button type="button" onclick="setSeg('profile',event)">Max Range</button>
+              <button type="button" class="active" onclick="setSeg('profile',event)">Balanced</button>
+              <button type="button" onclick="setSeg('profile',event)">Max Speed</button>
+            </div>
+            <div class="field-helper">Trades transmission speed for range — Max Range reaches further at a lower data rate, Max Speed is faster at closer distances.</div>
+          </div>
+          <div class="save-row">
+            <button class="btn-save" id="radio-save-btn" disabled onclick="trySave('radio')">
+              <span class="spinner"></span><span>Save</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="card-head-row">
+            <div class="section-heading" style="margin-bottom:0;">Paired Remote Unit</div>
+            <button class="icon-btn" id="refresh-btn" onclick="refreshEdges()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v5h-5"/></svg>
+            </button>
+          </div>
+          <div class="edge-list" id="edge-list"></div>
+          <button class="btn-outline-full" id="pair-btn" onclick="openPairOverlay()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Pair Remote Unit
+          </button>
+        </div>
+      </div>
+
+      <div id="role-edge-content" style="display:none;">
+        <div class="section-card">
+          <div class="safety-callout">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1.6 1.6 0 0 0 1.4 2.5h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
+            <span class="safety-callout-text">How a relay behaves on power or radio-link loss can affect fire-egress and security compliance for this site — check local code before changing it.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Blocking Prevention Timer</label>
+            <select class="field-select-full" onchange="markDirty('relay')">
+              <option>Off</option><option selected>5 min</option><option>10 min</option><option>15 min</option><option>30 min</option><option>60 min</option>
+            </select>
+            <div class="field-helper">Automatically releases a relay that's been continuously activated for this long, so it can't stay blocked indefinitely. Off disables the timer.</div>
+          </div>
+          <div class="subsection-divider"></div>
+          <div class="subsection-heading">Relay 1</div>
+          <div class="field-label">On power or radio-link loss</div>
+          <div class="seg-2col">
+            <button type="button" class="seg-btn-2line active" onclick="setRelay(event)"><span class="seg-main">Fail Secure</span><span class="seg-sub">Stays locked</span></button>
+            <button type="button" class="seg-btn-2line" onclick="setRelay(event)"><span class="seg-main">Fail Safe</span><span class="seg-sub">Unlocks</span></button>
+          </div>
+          <div class="subsection-divider"></div>
+          <div class="subsection-heading">Relay 2</div>
+          <div class="field-label">On power or radio-link loss</div>
+          <div class="seg-2col">
+            <button type="button" class="seg-btn-2line" onclick="setRelay(event)"><span class="seg-main">Fail Secure</span><span class="seg-sub">Stays locked</span></button>
+            <button type="button" class="seg-btn-2line active" onclick="setRelay(event)"><span class="seg-main">Fail Safe</span><span class="seg-sub">Unlocks</span></button>
+          </div>
+          <div class="save-row">
+            <button class="btn-save" id="relay-save-btn" disabled onclick="trySave('relay')">
+              <span class="spinner"></span><span>Save</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ Tab 2: Data Port ============ -->
+    <div class="settings-tab-panel" id="panel-dataport">
+      <div class="section-card">
+        <div class="section-heading">Data Port</div>
+        <div class="section-intro">This unit has one physical reader port — set it to match the reader you've wired to it.</div>
+        <div class="mode-segmented">
+          <button type="button" class="active" onclick="setPortMode('wiegand',event)">Wiegand</button>
+          <button type="button" onclick="setPortMode('osdp',event)">OSDP</button>
+        </div>
+        <div class="mode-fields active" id="wiegand-fields">
+          <div class="field-group">
+            <label class="field-label">Reader Type</label>
+            <select class="field-select-full" id="reader-type" onchange="markDirty('reader')">
+              <option>Wiegand 4</option><option>Wiegand 8</option><option selected>Wiegand 26 Standard</option>
+              <option>Wiegand 26 H10301</option><option>Wiegand 32</option><option>Wiegand 34 Fac 1 Byte</option>
+              <option>Wiegand 34 Fac 2 Byte</option><option>Wiegand 35 Corporate 1000</option><option>Wiegand 36</option>
+              <option>Wiegand 37 H10302</option><option>Wiegand 37 H10304</option><option>Wiegand 42</option>
+              <option>Wiegand 48 Corporate 1000</option><option>RAW</option>
+            </select>
+          </div>
+          <div class="toggle-row">
+            <div class="field-text"><div class="field-label">Manual Timing</div></div>
+            <label class="switch"><input type="checkbox" id="manual-input" onchange="setManualTiming(this.checked)"><span class="track"><span class="thumb"></span></span></label>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Pulse (μs)</label>
+            <input class="field-input" id="pulse" value="100" disabled oninput="markDirty('reader')">
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Interpulse (μs)</label>
+            <input class="field-input" id="interpulse" value="1000" disabled oninput="markDirty('reader')">
+          </div>
+        </div>
+        <div class="mode-fields" id="osdp-fields">
+          <div class="field-group">
+            <label class="field-label">Device Address</label>
+            <input class="field-input" type="number" value="0" min="0" max="126" oninput="markDirty('reader')">
+            <div class="field-helper">Must match the address configured on the OSDP reader itself (0–126).</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Baud Rate</label>
+            <select class="field-select-full" onchange="markDirty('reader')">
+              <option>9600</option><option selected>19200</option><option>38400</option><option>115200</option>
+            </select>
+          </div>
+          <div class="toggle-row" style="margin-bottom:0;">
+            <div class="field-text">
+              <div class="field-label">Secure Channel</div>
+              <div class="field-helper" style="margin-top:0;">Encrypts reader communication (OSDP Secure Channel / AES-128). The reader must support it too.</div>
+            </div>
+            <label class="switch"><input type="checkbox" checked onchange="markDirty('reader')"><span class="track"><span class="thumb"></span></span></label>
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="btn-save" id="reader-save-btn" disabled onclick="trySave('reader')">
+            <span class="spinner"></span><span>Save</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Tab 3: I/O Ports ============ -->
+    <div class="settings-tab-panel" id="panel-io">
+      <div class="section-card">
+        <div class="section-heading">Supervised I/O</div>
+        <div class="section-intro">Each port can be wired as an input or output. Inputs support end-of-line resistor supervision, to detect a cut or shorted wire.</div>
+        <div class="io-port-row">
+          <div class="io-port-head"><span class="io-port-name">I/O 1</span>
+            <div class="io-seg"><button type="button" class="active" onclick="setIOFunction(1,'input',event)">Input</button><button type="button" onclick="setIOFunction(1,'output',event)">Output</button></div>
+          </div>
+          <div class="io-supervision" id="io1-super"><select class="field-select-full" onchange="markDirty('io')"><option>Not Supervised</option><option selected>Single EOL</option><option>Double EOL</option></select></div>
+        </div>
+        <div class="io-port-row">
+          <div class="io-port-head"><span class="io-port-name">I/O 2</span>
+            <div class="io-seg"><button type="button" class="active" onclick="setIOFunction(2,'input',event)">Input</button><button type="button" onclick="setIOFunction(2,'output',event)">Output</button></div>
+          </div>
+          <div class="io-supervision" id="io2-super"><select class="field-select-full" onchange="markDirty('io')"><option>Not Supervised</option><option selected>Single EOL</option><option>Double EOL</option></select></div>
+        </div>
+        <div class="io-port-row">
+          <div class="io-port-head"><span class="io-port-name">I/O 3</span>
+            <div class="io-seg"><button type="button" onclick="setIOFunction(3,'input',event)">Input</button><button type="button" class="active" onclick="setIOFunction(3,'output',event)">Output</button></div>
+          </div>
+          <div class="io-supervision" id="io3-super" style="display:none;"><select class="field-select-full" onchange="markDirty('io')"><option>Not Supervised</option><option selected>Single EOL</option><option>Double EOL</option></select></div>
+        </div>
+        <div class="io-port-row">
+          <div class="io-port-head"><span class="io-port-name">I/O 4</span>
+            <div class="io-seg"><button type="button" class="active" onclick="setIOFunction(4,'input',event)">Input</button><button type="button" onclick="setIOFunction(4,'output',event)">Output</button></div>
+          </div>
+          <div class="io-supervision" id="io4-super"><select class="field-select-full" onchange="markDirty('io')"><option>Not Supervised</option><option>Single EOL</option><option selected>Double EOL</option></select></div>
+        </div>
+        <div class="save-row">
+          <button class="btn-save" id="io-save-btn" disabled onclick="trySave('io')">
+            <span class="spinner"></span><span>Save</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Tab 4: Network (new — moved out of its own top-level nav slot) ============ -->
+    <div class="settings-tab-panel" id="panel-network">
+      <div class="section-card">
+        <div class="section-heading">Network Connection</div>
+        <div class="field-group">
+          <label class="field-label">Connection Type</label>
+          <select class="field-select-full" onchange="markDirty('conn')">
+            <option>Wi-Fi</option>
+            <option>Wired Ethernet</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">IP Configuration</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="ipconfig" value="dhcp" checked onchange="setIpMode('dhcp')"> Automatic (DHCP)</label>
+            <label class="radio-option"><input type="radio" name="ipconfig" value="manual" onchange="setIpMode('manual')"> Manual</label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">IP Address</label>
+          <input class="field-input" id="ip" value="192.168.1.142" disabled oninput="validateIp('ip')">
+          <div class="field-error" id="ip-error">Enter a valid IP address (e.g. 192.168.1.1)</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Subnet Mask</label>
+          <input class="field-input" id="subnet" value="255.255.255.0" disabled oninput="validateIp('subnet')">
+          <div class="field-error" id="subnet-error">Enter a valid IP address (e.g. 192.168.1.1)</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Gateway</label>
+          <input class="field-input" id="gateway" value="192.168.1.1" disabled oninput="validateIp('gateway')">
+          <div class="field-error" id="gateway-error">Enter a valid IP address (e.g. 192.168.1.1)</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">DNS</label>
+          <input class="field-input" id="dns" value="192.168.1.1" disabled oninput="validateIp('dns')">
+          <div class="field-error" id="dns-error">Enter a valid IP address (e.g. 192.168.1.1)</div>
+        </div>
+        <div class="save-row">
+          <button class="btn-save" id="conn-save-btn" disabled onclick="trySave('conn')">
+            <span class="spinner"></span><span>Save</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-heading">Wi-Fi Access Point</div>
+        <div class="field-group">
+          <label class="field-label">Network Name (SSID)</label>
+          <input class="field-input" id="ssid" value="WW-Site-04" maxlength="32" oninput="markDirty('wifi')">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <input class="field-input" type="password" id="wifi-pass" value="wwbluecon" oninput="validateWifiPass()">
+          <div class="field-helper">At least 8 characters.</div>
+          <div class="field-error" id="wifi-pass-error">Password must be at least 8 characters</div>
+        </div>
+        <div class="toggle-row">
+          <div class="field-text">
+            <div class="field-label">Hide Network Name</div>
+            <div class="field-helper" style="margin-top:0;">Hidden networks must be entered manually on connecting devices.</div>
+          </div>
+          <label class="switch"><input type="checkbox" onchange="markDirty('wifi')"><span class="track"><span class="thumb"></span></span></label>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Auto-Disable Timer (minutes)</label>
+          <input class="field-input" type="number" value="30" min="0" oninput="markDirty('wifi')">
+          <div class="field-helper">Disables the Wi-Fi access point after this many minutes of inactivity, for security. 0 disables the timer.</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">HTTP Port</label>
+          <input class="field-input" type="number" value="8080" min="1" max="65535" oninput="markDirty('wifi')">
+        </div>
+        <div class="save-row">
+          <button class="btn-save" id="wifi-save-btn" disabled onclick="trySave('wifi')">
+            <span class="spinner"></span><span>Save</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pair-overlay" id="pair-overlay">
+    <button class="pair-cancel" onclick="closePairOverlay()">Cancel</button>
+    <div class="pair-overlay-body">
+      <div class="pair-state active" id="pair-searching">
+        <div class="radar-stage" style="width:150px;height:150px;">
+          <div class="radar-ring" style="--ring-start:60px; --ring-end:150px; width:60px; height:60px; animation-delay:0s;"></div>
+          <div class="radar-ring" style="--ring-start:60px; --ring-end:150px; width:60px; height:60px; animation-delay:0.8s;"></div>
+          <div class="radar-ring" style="--ring-start:60px; --ring-end:150px; width:60px; height:60px; animation-delay:1.6s;"></div>
+          <div class="radar-core" style="width:60px;height:60px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20v-7M8 10a5.7 5.7 0 0 1 8 0M5 7a10 10 0 0 1 14 0M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+          </div>
+        </div>
+        <div class="pair-heading">Searching for Remote Unit…</div>
+        <div class="pair-sub">Press and hold <strong>PAIR</strong> on the Remote Unit you want to add. This can take up to 30 seconds.</div>
+      </div>
+      <div class="pair-state" id="pair-found">
+        <div class="radar-stage" style="width:60px;height:60px;">
+          <div class="radar-core success" style="width:60px;height:60px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+        </div>
+        <div class="pair-heading">Remote Unit found</div>
+        <div class="pair-found-name" id="found-name">WW-EDGE-4F21A8</div>
+        <div class="pair-sub">Signal −51 dBm — close enough for a reliable pairing.</div>
+        <div class="pair-actions">
+          <button class="btn-primary-full" onclick="confirmPair()">Add to this Central Unit</button>
+          <button class="btn-ghost-full" onclick="closePairOverlay()">Cancel</button>
+        </div>
+      </div>
+      <div class="pair-state" id="pair-timeout">
+        <div class="radar-stage" style="width:60px;height:60px;">
+          <div class="radar-core" style="width:60px;height:60px; background:var(--color-text-faint);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          </div>
+        </div>
+        <div class="pair-heading">No Remote Unit found</div>
+        <div class="pair-sub">Make sure you're pressing and holding PAIR on the unit, within range of this Central Unit.</div>
+        <div class="pair-actions">
+          <button class="btn-primary-full" onclick="startSearch()">Try Again</button>
+          <button class="btn-ghost-full" onclick="closePairOverlay()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <a class="nav-item" href="system-info.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 11h1v6h1"/></svg></span><span class="nav-label">System Info</span></a>
+    <a class="nav-item" href="monitoring.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h3.5l1.8-6 3 11 2.2-8.5 1.5 3.5H21"/></svg></span><span class="nav-label">Monitoring</span></a>
+    <a class="nav-item active" href="settings.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span><span class="nav-label">Settings</span></a>
+    <a class="nav-item" href="device.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 2v4M16 2v4M4 10h16"/></svg></span><span class="nav-label">Device</span></a>
+  </div>
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+const state = {
+  role: 'gate',
+  dirty: { radio:false, relay:false, reader:false, io:false, conn:false, wifi:false },
+  failNext: false,
+  outcome: 'found',
+};
+
+let PAIRED = { id:'cur', name:'WW-EDGE-B01C44', signal:'−58 dBm' };
+
+function showTab(tab, evt){
+  document.querySelectorAll('.settings-tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  document.querySelectorAll('.settings-tabs button').forEach(b=>b.classList.remove('active'));
+  evt.currentTarget.classList.add('active');
+}
+
+function toast(msg, isError){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.toggle('error', !!isError);
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
+function markDirty(card){
+  state.dirty[card] = true;
+  updateSaveState(card);
+}
+function updateSaveState(card){
+  const btn = document.getElementById(card+'-save-btn');
+  if(!btn) return;
+  let valid = true;
+  if(card === 'radio'){ valid = document.getElementById('radio-pass').value.length >= 8; }
+  if(card === 'wifi'){ valid = document.getElementById('wifi-pass').value.length >= 8; }
+  if(card === 'conn'){
+    const mode = document.querySelector('input[name=ipconfig]:checked').value;
+    if(mode === 'manual'){
+      ['ip','subnet','gateway','dns'].forEach(f=>{
+        if(!/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(document.getElementById(f).value.trim())) valid = false;
+      });
+    }
+  }
+  btn.disabled = !(state.dirty[card] && valid);
+}
+function trySave(card){
+  updateSaveState(card);
+  const btn = document.getElementById(card+'-save-btn');
+  if(btn.disabled) return;
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(()=>{
+    btn.classList.remove('loading');
+    if(state.failNext){
+      toast("Couldn't save — check your connection and try again.", true);
+      btn.disabled = false;
+    } else {
+      toast('Saved');
+      state.dirty[card] = false;
+      btn.disabled = true;
+    }
+  }, 900);
+}
+function toggleFail(evt){
+  state.failNext = !state.failNext;
+  evt.target.textContent = 'Fail next save: ' + (state.failNext ? 'On' : 'Off');
+  evt.target.classList.toggle('current', state.failNext);
+}
+
+/* ---- Role switch (Radio/gate ↔ Relay Failsafe/edge) ---- */
+function setRole(role, evt){
+  state.role = role;
+  document.getElementById('role-badge').textContent = role === 'gate' ? 'Central Unit' : 'Remote Unit';
+  document.getElementById('role-gate-content').style.display = role === 'gate' ? '' : 'none';
+  document.getElementById('role-edge-content').style.display = role === 'edge' ? '' : 'none';
+  document.getElementById('tab-role-btn').textContent = role === 'gate' ? 'Radio' : 'Relay Failsafe';
+  evt.target.parentElement.querySelectorAll('.dev-btn').forEach(b=>b.classList.remove('current'));
+  evt.target.classList.add('current');
+}
+
+/* ---- Radio Configuration ---- */
+function validateRadioPass(){
+  const pass = document.getElementById('radio-pass');
+  const err = document.getElementById('radio-pass-error');
+  const valid = pass.value.length >= 8;
+  err.classList.toggle('show', !valid);
+  pass.classList.toggle('invalid', !valid);
+  markDirty('radio');
+}
+function setSeg(group, evt){
+  evt.target.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  evt.target.classList.add('active');
+  markDirty('radio');
+}
+
+/* ---- Relay Failsafe ---- */
+function setRelay(evt){
+  const btn = evt.currentTarget;
+  btn.closest('.seg-2col').querySelectorAll('.seg-btn-2line').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  markDirty('relay');
+}
+
+/* ---- Paired Remote Unit ---- */
+function renderEdges(){
+  const list = document.getElementById('edge-list');
+  const pairBtn = document.getElementById('pair-btn');
+  if(PAIRED){
+    list.innerHTML = `
+      <div class="edge-row" id="edge-cur">
+        <div class="edge-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></div>
+        <div class="edge-info"><div class="edge-name">${PAIRED.name}</div><div class="edge-role">Remote Unit</div></div>
+        <div class="edge-signal"><span class="edge-signal-value">${PAIRED.signal}</span><span class="rssi-bars good"><i></i><i></i><i></i></span></div>
+        <button class="edge-delete" onclick="askRemove()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-8 0 1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/></svg></button>
+      </div>
+      <div class="edge-confirm" id="edge-confirm">
+        <span class="edge-confirm-text">Unpair ${PAIRED.name} from this Central Unit?</span>
+        <div class="edge-confirm-actions"><button class="btn-text cancel" onclick="cancelRemove()">Cancel</button><button class="btn-text remove" onclick="doRemove()">Unpair</button></div>
+      </div>`;
+    pairBtn.style.display = 'none';
+  } else {
+    list.innerHTML = '<div class="edge-empty">Not paired with a Remote Unit yet.</div>';
+    pairBtn.style.display = 'flex';
+  }
+}
+renderEdges();
+
+function setPairedDemo(paired, evt){
+  PAIRED = paired ? { id:'cur', name:'WW-EDGE-B01C44', signal:'−58 dBm' } : null;
+  renderEdges();
+  evt.target.parentElement.querySelectorAll('.dev-btn').forEach(b=>b.classList.remove('current'));
+  evt.target.classList.add('current');
+}
+function refreshEdges(){
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  setTimeout(()=>{ btn.classList.remove('spinning'); toast('Refreshed'); }, 700);
+}
+function askRemove(){
+  document.getElementById('edge-cur').style.display = 'none';
+  document.getElementById('edge-confirm').classList.add('show');
+}
+function cancelRemove(){
+  document.getElementById('edge-cur').style.display = 'flex';
+  document.getElementById('edge-confirm').classList.remove('show');
+}
+function doRemove(){
+  PAIRED = null;
+  renderEdges();
+  toast('Remote Unit unpaired');
+}
+
+function setOutcome(outcome, evt){
+  state.outcome = outcome;
+  document.querySelectorAll('.dev-btn[data-outcome]').forEach(b=>b.classList.toggle('current', b.dataset.outcome === outcome));
+}
+function showPairState(which){
+  ['searching','found','timeout'].forEach(s=>{
+    document.getElementById('pair-'+s).classList.toggle('active', s===which);
+  });
+}
+function openPairOverlay(){
+  document.getElementById('pair-overlay').classList.add('show');
+  document.querySelector('.bottom-nav').style.visibility = 'hidden';
+  startSearch();
+}
+function closePairOverlay(){
+  document.getElementById('pair-overlay').classList.remove('show');
+  document.querySelector('.bottom-nav').style.visibility = 'visible';
+  renderEdges();
+}
+function startSearch(){
+  showPairState('searching');
+  clearTimeout(window._pairTimer);
+  window._pairTimer = setTimeout(()=>{ showPairState(state.outcome === 'found' ? 'found' : 'timeout'); }, 1600);
+}
+function confirmPair(){
+  PAIRED = { id:'cur', name:'WW-EDGE-4F21A8', signal:'−51 dBm' };
+  closePairOverlay();
+  toast('Remote Unit paired');
+}
+
+/* ---- Data Port ---- */
+function setPortMode(mode, evt){
+  document.getElementById('wiegand-fields').classList.toggle('active', mode==='wiegand');
+  document.getElementById('osdp-fields').classList.toggle('active', mode==='osdp');
+  evt.currentTarget.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  evt.currentTarget.classList.add('active');
+  markDirty('reader');
+}
+function setManualTiming(on){
+  document.getElementById('reader-type').disabled = on;
+  document.getElementById('pulse').disabled = !on;
+  document.getElementById('interpulse').disabled = !on;
+  markDirty('reader');
+}
+
+/* ---- I/O Ports ---- */
+function setIOFunction(port, func, evt){
+  const btn = evt.currentTarget;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('io'+port+'-super').style.display = func==='input' ? 'block' : 'none';
+  markDirty('io');
+}
+
+/* ---- Network ---- */
+function setIpMode(mode){
+  const disable = mode === 'dhcp';
+  ['ip','subnet','gateway','dns'].forEach(f=>{
+    document.getElementById(f).disabled = disable;
+    document.getElementById(f+'-error').classList.remove('show');
+  });
+  markDirty('conn');
+}
+function validateIp(field){
+  const el = document.getElementById(field);
+  const err = document.getElementById(field+'-error');
+  const valid = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(el.value.trim());
+  err.classList.toggle('show', !valid);
+  el.classList.toggle('invalid', !valid);
+  markDirty('conn');
+}
+function validateWifiPass(){
+  const pass = document.getElementById('wifi-pass');
+  const err = document.getElementById('wifi-pass-error');
+  const valid = pass.value.length >= 8;
+  err.classList.toggle('show', !valid);
+  pass.classList.toggle('invalid', !valid);
+  markDirty('wifi');
+}
+</script>
+</body>
+</html>
