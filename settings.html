@@ -404,6 +404,31 @@
           </button>
         </div>
       </div>
+
+      <div class="section-card" id="io-relay-rf-card">
+        <div class="section-heading">Relay State on RF Link Lost</div>
+        <div class="section-intro">Sets what each relay does if this unit loses its radio link to the paired Central Unit — independent of its behavior on power loss, set under Relay Failsafe.</div>
+        <div class="subsection-heading">Relay 1</div>
+        <div class="seg-2col">
+          <button type="button" class="seg-btn-2line active" onclick="setRelayRf(event)"><span class="seg-main">Fail Secure</span><span class="seg-sub">Stays locked</span></button>
+          <button type="button" class="seg-btn-2line" onclick="setRelayRf(event)"><span class="seg-main">Fail Safe</span><span class="seg-sub">Unlocks</span></button>
+        </div>
+        <div class="subsection-divider"></div>
+        <div class="subsection-heading">Relay 2</div>
+        <div class="seg-2col">
+          <button type="button" class="seg-btn-2line" onclick="setRelayRf(event)"><span class="seg-main">Fail Secure</span><span class="seg-sub">Stays locked</span></button>
+          <button type="button" class="seg-btn-2line active" onclick="setRelayRf(event)"><span class="seg-main">Fail Safe</span><span class="seg-sub">Unlocks</span></button>
+        </div>
+        <div class="safety-callout" style="margin-top:14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1.6 1.6 0 0 0 1.4 2.5h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
+          <span class="safety-callout-text">How a relay behaves on radio-link loss can affect fire-egress and security compliance for this site — check local code before changing it.</span>
+        </div>
+        <div class="save-row">
+          <button class="btn-save" id="iorelay-save-btn" disabled onclick="trySave('iorelay')">
+            <span class="spinner"></span><span>Save</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ============ Tab 4: Network (new — moved out of its own top-level nav slot) ============ -->
@@ -545,7 +570,7 @@
 <script>
 const state = {
   role: 'gate',
-  dirty: { radio:false, relay:false, reader:false, io:false, conn:false, wifi:false },
+  dirty: { radio:false, relay:false, reader:false, io:false, iorelay:false, conn:false, wifi:false },
   failNext: false,
   outcome: 'found',
 };
@@ -644,6 +669,14 @@ function setRelay(evt){
   btn.closest('.seg-2col').querySelectorAll('.seg-btn-2line').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   markDirty('relay');
+}
+
+/* ---- I/O Ports: Relay State on RF Link Lost ---- */
+function setRelayRf(evt){
+  const btn = evt.currentTarget;
+  btn.closest('.seg-2col').querySelectorAll('.seg-btn-2line').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  markDirty('iorelay');
 }
 
 /* ---- Paired Remote Unit ---- */

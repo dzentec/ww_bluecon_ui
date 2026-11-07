@@ -17,6 +17,9 @@ no server required.
 - **Exit device** — a small icon next to the "Connected" status in the header of all four
   dashboard screens, added 2026-11-06 per user feedback (there was previously no way out of
   single-device management back to the device list). Links straight back to Device Scan.
+- **Relay State on RF Link Lost** — a new section on Settings → I/O Ports (2026-11-07, safety
+  requirement), with its own Fail Secure/Fail Safe control per relay for radio-link loss
+  specifically, separate from the existing Relay Failsafe tab's combined power/RF-loss control.
 
 ## What's included
 | Screen | Source sketch | Winner |
