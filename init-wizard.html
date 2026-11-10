@@ -8,9 +8,9 @@
 <style>
   :root {
     --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
-    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.68); --color-text-faint: rgba(27, 36, 48, 0.65);
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
     --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
-    --color-danger: #D34247; --color-success: #2BA23E;
+    --color-danger: #E5484D; --color-success: #2FB344;
     --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
     --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
     --text-heading: 20px; --text-body: 15px; --text-label: 13px;
@@ -711,7 +711,7 @@ function simulateButtonPress(v){
   document.getElementById(prefix+'confirm-sub').textContent = 'Device authenticated.';
   document.getElementById(prefix+'cue-note').style.display = 'none';
   document.getElementById(prefix+'confirm-sim-btn').style.display = 'none';
-  document.getElementById(prefix+'countdown-number').innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2BA23E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+  document.getElementById(prefix+'countdown-number').innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2FB344" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
   setTimeout(()=>{
     if(v === 'a') closeFullConfirm(v);
     showMandatorySecurity(v);
@@ -723,7 +723,7 @@ function countdownTimeout(v){
   document.getElementById(prefix+'confirm-sub').textContent = 'No button press detected within 10 seconds.';
   document.getElementById(prefix+'cue-note').style.display = 'none';
   document.getElementById(prefix+'confirm-sim-btn').style.display = 'none';
-  document.getElementById(prefix+'countdown-number').innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D34247" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+  document.getElementById(prefix+'countdown-number').innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>';
   const actions = document.getElementById(prefix+'confirm-actions');
   actions.innerHTML = '<button class="btn-primary-full" disabled id="'+prefix+'retry-btn">Try Again (30s)</button>';
   let secs = 3; // compressed demo timer; copy still says 30s to match the real spec

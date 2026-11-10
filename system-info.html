@@ -12,13 +12,13 @@
     --color-surface: #FFFFFF;
     --color-border: #E7E9EC;
     --color-text: #1B2430;
-    --color-text-muted: rgba(27, 36, 48, 0.68);
-    --color-text-faint: rgba(27, 36, 48, 0.65);
+    --color-text-muted: rgba(27, 36, 48, 0.56);
+    --color-text-faint: rgba(27, 36, 48, 0.38);
     --color-primary: #1B2430;
     --color-primary-hover: #0F151D;
     --color-accent: #3E7BFA;
-    --color-danger: #D34247;
-    --color-success: #2BA23E;
+    --color-danger: #E5484D;
+    --color-success: #2FB344;
     --color-danger-bg: #FDECEC;
     --color-success-bg: #E9F8EC;
     --color-accent-bg: #EAF1FF;
@@ -63,7 +63,7 @@
   /* ---------- Shell header: role badge + connection ---------- */
   .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
   .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
-  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1C7F2C; }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
   .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
   .shell-header-right { display: flex; align-items: center; gap: 10px; }
   .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
@@ -95,7 +95,7 @@
   .dot-indicator.bad { background: var(--color-danger); }
   .dot-indicator.neutral { background: var(--color-text-faint); }
   .status-word { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; }
-  .status-word.good { color: #1C7F2C; background: var(--color-success-bg); }
+  .status-word.good { color: #1E8A30; background: var(--color-success-bg); }
   .status-word.warn { color: #9A5A12; background: #FBEFDD; }
   .status-word.bad { color: #C23237; background: var(--color-danger-bg); }
   .status-word.neutral { color: var(--color-text-faint); background: #EEF0F2; }
@@ -210,15 +210,7 @@
           <span class="info-value-indicator">
             <span class="dot-indicator good" id="b-power-dot"></span>
             <span class="info-value" id="b-power-value">24.1 VDC</span>
-            <span class="status-word good" id="b-power-word">Normal</span>
-          </span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Battery</span>
-          <span class="info-value-indicator">
-            <span class="dot-indicator good" id="b-battery-dot"></span>
-            <span class="info-value" id="b-battery-value">7.6 VDC</span>
-            <span class="status-word good" id="b-battery-word">Normal</span>
+            <span class="status-word good" id="b-power-word">Mains</span>
           </span>
         </div>
         <div class="section-heading">Device Identity</div>
@@ -229,9 +221,8 @@
         <div class="info-row"><span class="info-label">API Version</span><span class="info-value">1.0.0</span></div>
         <div id="b-network-block">
           <div class="section-heading">Network</div>
-          <div class="info-row"><span class="info-label">Connection</span><span class="info-value" id="b-network-type">Wi-Fi</span></div>
-          <div class="info-row" id="b-network-ssid-row"><span class="info-label">Network Name</span><span class="info-value">WW-Site-04</span></div>
-          <div class="info-row"><span class="info-label">IP Address</span><span class="info-value" id="b-network-ip">192.168.1.142</span></div>
+          <div class="info-row"><span class="info-label">Connection</span><span class="info-value">Ethernet</span></div>
+          <div class="info-row"><span class="info-label">IP Address</span><span class="info-value" id="b-network-ip">192.168.1.201</span></div>
         </div>
       </div>
       <div id="b-settings-slot"></div>
@@ -370,10 +361,13 @@ function setSignal(v, level, evt) {
   if (evt) markCurrent(v, 'signal', level);
 }
 
+/* Device can only sense one voltage plus which source it's on — there is no
+   separate Battery reading. >14VDC on mains charges the battery; losing mains
+   switches the device to run from battery; <10.5V on battery is critical. */
 const POWER_LEVELS = {
-  normal: { value: '24.1 VDC', word: 'Normal', cls: 'good' },
-  low: { value: '18.6 VDC', word: 'Low', cls: 'bad' },
-  high: { value: '29.4 VDC', word: 'High', cls: 'bad' },
+  mains: { value: '24.1 VDC', word: 'Mains', cls: 'good' },
+  battery: { value: '11.8 VDC', word: 'Battery', cls: 'warn' },
+  critical: { value: '9.7 VDC', word: 'Battery · Critical', cls: 'bad' },
 };
 function setPower(v, level, evt) {
   const m = POWER_LEVELS[level];
@@ -385,40 +379,9 @@ function setPower(v, level, evt) {
   if (evt) markCurrent(v, 'power', level);
 }
 
-const BATTERY_LEVELS = {
-  normal: { value: '7.6 VDC', word: 'Normal', cls: 'good' },
-  low: { value: '6.0 VDC', word: 'Low', cls: 'bad' },
-};
-function setBattery(v, level, evt) {
-  const valueEl = document.getElementById(v + '-battery-value');
-  const word = document.getElementById(v + '-battery-word');
-  const dot = document.getElementById(v + '-battery-dot');
-  if (level === 'none') {
-    valueEl.textContent = 'Not connected';
-    word.style.display = 'none';
-    dot.className = 'dot-indicator neutral';
-  } else {
-    const m = BATTERY_LEVELS[level];
-    valueEl.textContent = m.value;
-    word.style.display = 'inline-block';
-    word.textContent = m.word;
-    word.className = 'status-word ' + m.cls;
-    dot.className = 'dot-indicator ' + m.cls;
-  }
-  if (evt) markCurrent(v, 'battery', level);
-}
-
-function setNetwork(v, type, evt) {
-  const block = document.getElementById(v + '-network-block');
-  if (type === 'none') {
-    block.style.display = 'none';
-  } else {
-    block.style.display = 'block';
-    document.getElementById(v + '-network-type').textContent = type === 'wifi' ? 'Wi-Fi' : 'Ethernet';
-    document.getElementById(v + '-network-ssid-row').style.display = type === 'wifi' ? 'flex' : 'none';
-    document.getElementById(v + '-network-ip').textContent = type === 'wifi' ? '192.168.1.142' : '192.168.1.201';
-  }
-  if (evt) markCurrent(v, 'network', type);
+function setNetwork(v, present, evt) {
+  document.getElementById(v + '-network-block').style.display = present === 'none' ? 'none' : 'block';
+  if (evt) markCurrent(v, 'network', present);
 }
 
 function toast(v, msg, isError) {

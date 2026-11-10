@@ -8,9 +8,9 @@
 <style>
   :root {
     --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
-    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.68); --color-text-faint: rgba(27, 36, 48, 0.65);
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
     --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
-    --color-danger: #D34247; --color-success: #2BA23E;
+    --color-danger: #E5484D; --color-success: #2FB344;
     --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
     --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
     --text-heading: 20px; --text-body: 15px; --text-label: 13px;
@@ -33,7 +33,7 @@
 
   .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
   .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
-  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1C7F2C; }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
   .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
   .shell-header-right { display: flex; align-items: center; gap: 10px; }
   .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
@@ -62,7 +62,7 @@
   .dot-indicator.bad { background: var(--color-danger); }
   .dot-indicator.neutral { background: var(--color-text-faint); }
   .status-word { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; }
-  .status-word.good { color: #1C7F2C; background: var(--color-success-bg); }
+  .status-word.good { color: #1E8A30; background: var(--color-success-bg); }
   .status-word.warn { color: #9A5A12; background: #FBEFDD; }
   .status-word.bad { color: #C23237; background: var(--color-danger-bg); }
   .status-word.neutral { color: var(--color-text-faint); background: #EEF0F2; }
@@ -211,8 +211,8 @@
           <div class="section-heading">Packet Loss</div>
           <div class="chart-wrap">
             <div class="chart-timeframe" id="b-chart-tf">
-              <button class="active" onclick="setTimeframe('b','60s',event)">60s</button>
-              <button onclick="setTimeframe('b','10m',event)">10 min</button>
+              <button class="active" onclick="setTimeframe('b','10m',event)">10 min</button>
+              <button onclick="setTimeframe('b','60m',event)">60 min</button>
               <button onclick="setTimeframe('b','24h',event)">24 hour</button>
             </div>
             <svg viewBox="0 0 300 110" width="100%" height="110" id="b-chart-svg">
@@ -437,7 +437,7 @@
     const n = 11;
     const pts = [];
     for(let i=0;i<n;i++){
-      let base = timeframe === '24h' ? 6 : timeframe === '10m' ? 3 : 1.5;
+      let base = timeframe === '24h' ? 6 : timeframe === '60m' ? 3 : 1.5;
       let val = Math.random()*base;
       if(Math.random() < 0.15) val += base*3 + Math.random()*10;
       pts.push(Math.min(100, Math.round(val*10)/10));
@@ -461,9 +461,9 @@
 
     const labels = timeframe === '24h'
       ? ['24h','21h','18h','15h','12h','9h','6h','3h','now']
-      : timeframe === '10m'
-      ? ['10m','9m','8m','7m','6m','5m','4m','3m','2m','1m','now']
-      : ['60s','54s','48s','42s','36s','30s','24s','18s','12s','6s','now'];
+      : timeframe === '60m'
+      ? ['60m','54m','48m','42m','36m','30m','24m','18m','12m','6m','now']
+      : ['10m','9m','8m','7m','6m','5m','4m','3m','2m','1m','now'];
     document.getElementById(v+'-chart-xlabels').innerHTML = labels.map(l=>`<span>${l}</span>`).join('');
   }
 
@@ -473,7 +473,7 @@
     drawChart(v, timeframe);
   }
 
-  drawChart('b','60s');
+  drawChart('b','10m');
   drawFaultChart();
 </script>
 </body>

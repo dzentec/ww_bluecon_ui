@@ -8,9 +8,9 @@
 <style>
   :root {
     --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
-    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.68); --color-text-faint: rgba(27, 36, 48, 0.65);
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
     --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
-    --color-danger: #D34247; --color-success: #2BA23E;
+    --color-danger: #E5484D; --color-success: #2FB344;
     --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
     --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
     --text-heading: 20px; --text-body: 15px; --text-label: 13px;
@@ -26,7 +26,7 @@
 
   .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
   .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
-  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1C7F2C; }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
   .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
   .shell-header-right { display: flex; align-items: center; gap: 10px; }
   .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
@@ -121,14 +121,6 @@
   .sheet-version-row { font-size: 12.5px; color: var(--color-text-muted); margin-bottom: 16px; }
   .sheet-version-row strong { color: var(--color-text); }
 
-  .ota-path-card { display: flex; align-items: center; gap: 12px; border: 1.5px solid var(--color-border); border-radius: 14px; padding: 13px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s ease; }
-  .ota-path-card:hover { border-color: var(--color-accent); }
-  .ota-path-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--color-accent-bg); color: var(--color-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .ota-path-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .ota-path-title { font-size: 14px; font-weight: 600; }
-  .ota-path-sub { font-size: 11.5px; color: var(--color-text-faint); line-height: 1.35; }
-  .ota-path-chevron { color: var(--color-text-faint); flex-shrink: 0; }
-  .ota-no-wifi-note { font-size: 11.5px; color: var(--color-text-faint); font-style: italic; margin-bottom: 10px; line-height: 1.4; }
 
   .ota-confirm-path { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
   .ota-confirm-actions { display: flex; gap: 10px; margin-top: 4px; }
@@ -350,33 +342,17 @@
 
   <div class="scrim" id="scrim" onclick="closeSheet()"></div>
   <div class="ota-sheet" id="sheet">
-    <div class="ota-sheet-panel" data-step="select">
+    <div class="ota-sheet-panel">
       <div class="sheet-handle"></div>
       <div class="sheet-title">Update Firmware</div>
       <div class="sheet-version-row">v2.4.1 → <strong>v2.5.0</strong> available</div>
-      <div class="ota-path-card" id="wifi-card" onclick="selectPath('wifi')">
-        <span class="ota-path-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12.5a10 10 0 0 1 14 0M8 15.5a6 6 0 0 1 8 0M11.5 18.5a1.5 1.5 0 0 1 1-.01"/></svg></span>
-        <span class="ota-path-text"><span class="ota-path-title">Update via Wi-Fi</span><span class="ota-path-sub">Device downloads &amp; installs itself over Wi-Fi — fastest if available</span></span>
-        <span class="ota-path-chevron">›</span>
-      </div>
-      <div class="ota-no-wifi-note" id="no-wifi-note" style="display:none">This device has no Wi-Fi module — only direct Bluetooth transfer is available.</div>
-      <div class="ota-path-card" onclick="selectPath('ble')">
-        <span class="ota-path-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 6.5 17.5 15 12 20v-16l5.5 4.5-11 8.5"/></svg></span>
-        <span class="ota-path-text"><span class="ota-path-title">Update via Bluetooth</span><span class="ota-path-sub">Direct transfer, ~10MB, no network needed (~1–2 min)</span></span>
-        <span class="ota-path-chevron">›</span>
-      </div>
-      <button class="btn-confirm-cancel" style="width:100%;margin-top:4px;" onclick="closeSheet()">Cancel</button>
-    </div>
-    <div class="ota-sheet-panel" data-step="confirm" style="display:none">
-      <div class="sheet-handle"></div>
-      <div class="sheet-title">Confirm Update</div>
-      <div class="ota-confirm-path" id="confirm-path-label">Via Bluetooth (direct transfer)</div>
+      <div class="ota-confirm-path">Via Bluetooth — direct transfer, ~10MB, no network needed (~1–2 min)</div>
       <div class="safety-callout danger-tint">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
-        <div class="safety-callout-text" id="confirm-callout-text">Keep the device powered and stay close to it for the entire transfer — don't walk away, close the app, or cut power. The device will restart automatically once the update finishes.</div>
+        <div class="safety-callout-text">Keep the device powered and stay close to it for the entire transfer — don't walk away, close the app, or cut power. The device will restart automatically once the update finishes.</div>
       </div>
       <div class="ota-confirm-actions">
-        <button class="btn-confirm-cancel" onclick="backToSelect()">Back</button>
+        <button class="btn-confirm-cancel" onclick="closeSheet()">Cancel</button>
         <button class="btn-confirm-go" onclick="startOta()">Start Update</button>
       </div>
     </div>
@@ -460,39 +436,15 @@ function historyReconnect(){
 }
 
 /* ---------- OTA state machine ---------- */
-const ota = { hasWifi: true, failSim: false };
+const ota = { failSim: false };
 
 function openOta(){
-  ota.path = null;
   showSheet(true);
-  showSheetStep('select');
 }
 function closeSheet(){ showSheet(false); }
 function showSheet(open){
   document.getElementById('scrim').classList.toggle('show', open);
   document.getElementById('sheet').classList.toggle('open', open);
-}
-function showSheetStep(step){
-  document.querySelectorAll('#sheet .ota-sheet-panel').forEach(p=>{
-    p.style.display = (p.dataset.step === step) ? '' : 'none';
-  });
-  if(step === 'select'){
-    const noWifi = ota.hasWifi === false;
-    document.getElementById('wifi-card').style.display = noWifi ? 'none' : '';
-    document.getElementById('no-wifi-note').style.display = noWifi ? '' : 'none';
-  }
-}
-function backToSelect(){ showSheetStep('select'); }
-
-function selectPath(path){
-  ota.path = path;
-  document.getElementById('confirm-path-label').textContent = path === 'wifi'
-    ? 'Via Wi-Fi (device downloads itself)'
-    : 'Via Bluetooth (direct transfer)';
-  document.getElementById('confirm-callout-text').textContent = path === 'wifi'
-    ? 'The app sends the update command over Bluetooth, then the device downloads and installs it itself over Wi-Fi. Keep the device powered and stay nearby until it finishes — it will restart automatically once the update completes.'
-    : 'Keep the device powered and stay close to it for the entire transfer — don’t walk away, close the app, or cut power. The device will restart automatically once the update finishes.';
-  showSheetStep('confirm');
 }
 
 function startOta(){
@@ -518,29 +470,7 @@ const BLE_STAGES = [
     sub: 'Reconnecting once the device comes back online. Keep the app open.',
     mini: 'Restarting device…' },
 ];
-const WIFI_STAGES = [
-  { key: 'sending', label: 'Send', determinate: true, incr: () => 18,
-    title: p => `Sending update command… ${p}%`,
-    sub: 'Over Bluetooth — keep the device powered and stay connected until this finishes sending.',
-    mini: 'Sending update command…' },
-  { key: 'transfer', label: 'Transfer', determinate: false, ticks: 6,
-    title: () => 'Device downloading over Wi-Fi…',
-    sub: 'The device finishes this on its own over Wi-Fi — you don’t need to stay in Bluetooth range, but keep it powered.',
-    mini: 'Device downloading over Wi-Fi…' },
-  { key: 'verify', label: 'Verify', determinate: false, ticks: 4,
-    title: () => 'Verifying firmware integrity…',
-    sub: 'The device checks the downloaded image before installing. Keep it powered.',
-    mini: 'Verifying firmware…' },
-  { key: 'apply', label: 'Apply', determinate: true, incr: () => 16 + Math.random()*8,
-    title: p => `Applying update… ${p}%`,
-    sub: 'Do not power off the device — it’s installing the update now.',
-    mini: 'Applying update…' },
-  { key: 'reboot', label: 'Reboot', determinate: false, ticks: 5,
-    title: () => 'Restarting device…',
-    sub: 'Reconnecting once the device comes back online. Keep the app open.',
-    mini: 'Restarting device…' },
-];
-function stagesFor(){ return ota.path === 'wifi' ? WIFI_STAGES : BLE_STAGES; }
+function stagesFor(){ return BLE_STAGES; }
 
 function beginProgress(){
   ota.stageIndex = 0;
@@ -627,6 +557,7 @@ function renderStage(){
   document.getElementById('ota-fill').style.width = indeterminate ? '40%' : pctRounded + '%';
   document.getElementById('ota-pct').textContent = indeterminate ? '' : pctRounded + '%';
   document.getElementById('ota-pct').style.display = indeterminate ? 'none' : '';
+  renderStepper();
 }
 
 function setDoneUI(){
@@ -672,12 +603,6 @@ function closeOta(){
 }
 
 /* ---------- Dev controls (Firmware) ---------- */
-function toggleWifiModule(e){
-  ota.hasWifi = !ota.hasWifi;
-  e.target.textContent = 'Wi-Fi module: ' + (ota.hasWifi ? 'Present' : 'Absent');
-  e.target.classList.toggle('current', ota.hasWifi);
-  if(document.getElementById('sheet').classList.contains('open')) showSheetStep('select');
-}
 function toggleFailSim(e){
   ota.failSim = !ota.failSim;
   e.target.textContent = 'Simulate interruption: ' + (ota.failSim ? 'On' : 'Off');
@@ -685,9 +610,7 @@ function toggleFailSim(e){
 }
 function resetDemo(){
   clearInterval(ota.timer);
-  ota.hasWifi = true; ota.failSim = false;
-  document.getElementById('wifi-toggle').textContent = 'Wi-Fi module: Present';
-  document.getElementById('wifi-toggle').classList.add('current');
+  ota.failSim = false;
   document.getElementById('failsim-toggle').textContent = 'Simulate interruption: Off';
   document.getElementById('failsim-toggle').classList.remove('current');
   renderProgressContainer(false);

@@ -20,6 +20,12 @@ no server required.
 - **Relay State on RF Link Lost** — a new section on Settings → I/O Ports (2026-11-07, safety
   requirement), with its own Fail Secure/Fail Safe control per relay for radio-link loss
   specifically, separate from the existing Relay Failsafe tab's combined power/RF-loss control.
+- **2026-11-10 hardware corrections:** System Info's Power/Battery rows merged into one voltage +
+  source reading (Mains/Battery/Battery · Critical); Settings → Radio Configuration collapsed to a
+  single Region picker (no Channel/Password/Transmit Power/Profile); all Wi-Fi UI removed — Network
+  Settings is Ethernet-only and the Firmware Update flow has one path (Bluetooth), no path-select
+  step. See `.planning/sketches/003-system-info`, `011-settings`, `012-device` READMEs and
+  `MANIFEST.md`'s Open Items for the full rationale.
 
 ## What's included
 | Screen | Source sketch | Winner |

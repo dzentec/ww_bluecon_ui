@@ -8,9 +8,9 @@
 <style>
   :root {
     --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
-    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.68); --color-text-faint: rgba(27, 36, 48, 0.65);
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
     --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
-    --color-danger: #D34247; --color-success: #2BA23E;
+    --color-danger: #E5484D; --color-success: #2FB344;
     --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
     --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
     --text-heading: 20px; --text-body: 15px; --text-label: 13px;
@@ -26,7 +26,7 @@
 
   .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
   .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
-  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1C7F2C; }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
   .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
   .shell-header-right { display: flex; align-items: center; gap: 10px; }
   .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
@@ -212,42 +212,16 @@
       <div id="role-gate-content">
         <div class="section-card">
           <div class="section-heading">Radio Configuration</div>
-          <div class="field-group">
-            <label class="field-label">Frequency Band</label>
-            <div class="segmented-inline" style="margin-bottom:16px;">
-              <button type="button" class="active" onclick="setSeg('band',event)">915 MHz</button>
-              <button type="button" onclick="setSeg('band',event)">868 MHz</button>
-            </div>
-            <div class="field-helper">915 MHz is the Americas ISM band; 868 MHz is the European ISM band. Match your installation's region — this isn't a performance preference.</div>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Channel</label>
+          <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label">Region</label>
             <select class="field-select-full" onchange="markDirty('radio')">
-              <option>Auto</option><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+              <option selected>USA / Canada / Mexico — 915 MHz ISM</option>
+              <option>Brazil — 915 MHz ISM</option>
+              <option>Colombia — 915 MHz ISM</option>
+              <option>Europe — 868 MHz SRD</option>
+              <option>Australia — 915 MHz ISM</option>
             </select>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Radio Network Password</label>
-            <input class="field-input" type="password" id="radio-pass" value="wwradio2026" oninput="validateRadioPass()">
-            <div class="field-helper">At least 8 characters.</div>
-            <div class="field-error" id="radio-pass-error">Password must be at least 8 characters</div>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Transmit Power</label>
-            <div class="segmented-inline">
-              <button type="button" onclick="setSeg('power',event)">Low</button>
-              <button type="button" class="active" onclick="setSeg('power',event)">Medium</button>
-              <button type="button" onclick="setSeg('power',event)">High</button>
-            </div>
-          </div>
-          <div class="field-group" style="margin-bottom:0;margin-top:14px;">
-            <label class="field-label">Performance Profile</label>
-            <div class="segmented-inline">
-              <button type="button" onclick="setSeg('profile',event)">Max Range</button>
-              <button type="button" class="active" onclick="setSeg('profile',event)">Balanced</button>
-              <button type="button" onclick="setSeg('profile',event)">Max Speed</button>
-            </div>
-            <div class="field-helper">Trades transmission speed for range — Max Range reaches further at a lower data rate, Max Speed is faster at closer distances.</div>
+            <div class="field-helper">Sets the radio's regulatory band for your installation's country — not a performance preference.</div>
           </div>
           <div class="save-row">
             <button class="btn-save" id="radio-save-btn" disabled onclick="trySave('radio')">
@@ -436,13 +410,6 @@
       <div class="section-card">
         <div class="section-heading">Network Connection</div>
         <div class="field-group">
-          <label class="field-label">Connection Type</label>
-          <select class="field-select-full" onchange="markDirty('conn')">
-            <option>Wi-Fi</option>
-            <option>Wired Ethernet</option>
-          </select>
-        </div>
-        <div class="field-group">
           <label class="field-label">IP Configuration</label>
           <div class="radio-group">
             <label class="radio-option"><input type="radio" name="ipconfig" value="dhcp" checked onchange="setIpMode('dhcp')"> Automatic (DHCP)</label>
@@ -471,41 +438,6 @@
         </div>
         <div class="save-row">
           <button class="btn-save" id="conn-save-btn" disabled onclick="trySave('conn')">
-            <span class="spinner"></span><span>Save</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <div class="section-heading">Wi-Fi Access Point</div>
-        <div class="field-group">
-          <label class="field-label">Network Name (SSID)</label>
-          <input class="field-input" id="ssid" value="WW-Site-04" maxlength="32" oninput="markDirty('wifi')">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Password</label>
-          <input class="field-input" type="password" id="wifi-pass" value="wwbluecon" oninput="validateWifiPass()">
-          <div class="field-helper">At least 8 characters.</div>
-          <div class="field-error" id="wifi-pass-error">Password must be at least 8 characters</div>
-        </div>
-        <div class="toggle-row">
-          <div class="field-text">
-            <div class="field-label">Hide Network Name</div>
-            <div class="field-helper" style="margin-top:0;">Hidden networks must be entered manually on connecting devices.</div>
-          </div>
-          <label class="switch"><input type="checkbox" onchange="markDirty('wifi')"><span class="track"><span class="thumb"></span></span></label>
-        </div>
-        <div class="field-group">
-          <label class="field-label">Auto-Disable Timer (minutes)</label>
-          <input class="field-input" type="number" value="30" min="0" oninput="markDirty('wifi')">
-          <div class="field-helper">Disables the Wi-Fi access point after this many minutes of inactivity, for security. 0 disables the timer.</div>
-        </div>
-        <div class="field-group">
-          <label class="field-label">HTTP Port</label>
-          <input class="field-input" type="number" value="8080" min="1" max="65535" oninput="markDirty('wifi')">
-        </div>
-        <div class="save-row">
-          <button class="btn-save" id="wifi-save-btn" disabled onclick="trySave('wifi')">
             <span class="spinner"></span><span>Save</span>
           </button>
         </div>
@@ -570,7 +502,7 @@
 <script>
 const state = {
   role: 'gate',
-  dirty: { radio:false, relay:false, reader:false, io:false, iorelay:false, conn:false, wifi:false },
+  dirty: { radio:false, relay:false, reader:false, io:false, iorelay:false, conn:false },
   failNext: false,
   outcome: 'found',
 };
@@ -601,8 +533,6 @@ function updateSaveState(card){
   const btn = document.getElementById(card+'-save-btn');
   if(!btn) return;
   let valid = true;
-  if(card === 'radio'){ valid = document.getElementById('radio-pass').value.length >= 8; }
-  if(card === 'wifi'){ valid = document.getElementById('wifi-pass').value.length >= 8; }
   if(card === 'conn'){
     const mode = document.querySelector('input[name=ipconfig]:checked').value;
     if(mode === 'manual'){
@@ -646,21 +576,6 @@ function setRole(role, evt){
   document.getElementById('tab-role-btn').textContent = role === 'gate' ? 'Radio' : 'Relay Failsafe';
   evt.target.parentElement.querySelectorAll('.dev-btn').forEach(b=>b.classList.remove('current'));
   evt.target.classList.add('current');
-}
-
-/* ---- Radio Configuration ---- */
-function validateRadioPass(){
-  const pass = document.getElementById('radio-pass');
-  const err = document.getElementById('radio-pass-error');
-  const valid = pass.value.length >= 8;
-  err.classList.toggle('show', !valid);
-  pass.classList.toggle('invalid', !valid);
-  markDirty('radio');
-}
-function setSeg(group, evt){
-  evt.target.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
-  evt.target.classList.add('active');
-  markDirty('radio');
 }
 
 /* ---- Relay Failsafe ---- */
@@ -799,14 +714,7 @@ function validateIp(field){
   el.classList.toggle('invalid', !valid);
   markDirty('conn');
 }
-function validateWifiPass(){
-  const pass = document.getElementById('wifi-pass');
-  const err = document.getElementById('wifi-pass-error');
-  const valid = pass.value.length >= 8;
-  err.classList.toggle('show', !valid);
-  pass.classList.toggle('invalid', !valid);
-  markDirty('wifi');
-}
+
 </script>
 </body>
 </html>
