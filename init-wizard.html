@@ -54,6 +54,15 @@
   .choice-sub { font-size: 12px; color: var(--color-text-faint); margin-top: 2px; line-height: 1.4; }
   .choice-chevron { color: var(--color-text-faint); flex-shrink: 0; }
 
+  .profile-pick-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s ease; width: 100%; text-align: left; font-family: var(--font-sans); appearance: none; }
+  .profile-pick-row.active { border-color: var(--color-accent); background: var(--color-accent-bg); }
+  .profile-pick-name { font-size: 14px; font-weight: 600; color: var(--color-text); }
+  .profile-pick-summary { font-size: 12px; color: var(--color-text-faint); margin-top: 2px; }
+  .profile-pick-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--color-border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .profile-pick-check svg { display: none; }
+  .profile-pick-row.active .profile-pick-check { background: var(--color-accent); border-color: var(--color-accent); }
+  .profile-pick-row.active .profile-pick-check svg { display: block; }
+
   /* ---------- QR scanner mock ---------- */
   .qr-viewfinder { width: 230px; height: 230px; background: #14181F; border-radius: 20px; position: relative; margin: 10px auto 24px; overflow: hidden; }
   .qr-corner { position: absolute; width: 28px; height: 28px; border: 3px solid #fff; }
@@ -315,15 +324,25 @@
       </div>
 
       <div class="wiz-screen centered" id="a-screen-apply-config">
-        <div class="screen-title" style="padding:0;margin-bottom:4px;">Apply Remote Unit Configuration?</div>
-        <div class="screen-sub" style="padding:0;margin:-2px 0 14px;">A configuration was staged earlier from a Central Unit — apply it now instead of setting up Data Port, I/O Ports, and Network by hand.</div>
-        <div class="section-card" style="text-align:left;width:100%;max-width:280px;">
-          <div class="config-summary-row"><span>Staged from</span><strong>WW-GATE-7C3A1F</strong></div>
-          <div class="config-summary-row"><span>Data Port</span><strong>OSDP</strong></div>
-          <div class="config-summary-row"><span>I/O Ports</span><strong>Auto-assigned</strong></div>
-          <div class="config-summary-row"><span>Network</span><strong>Ethernet · DHCP</strong></div>
+        <div class="screen-title" style="padding:0;margin-bottom:4px;">Apply Job Profile?</div>
+        <div class="screen-sub" style="padding:0;margin:-2px 0 14px;">Choose a saved profile to apply instead of setting up Data Port, I/O Ports, and Network by hand.</div>
+        <div id="a-job-profile-picker" style="width:100%;max-width:280px;">
+          <button type="button" class="profile-pick-row active" onclick="selectJobProfile('a',event)">
+            <div>
+              <div class="profile-pick-name">Downtown Branch</div>
+              <div class="profile-pick-summary">OSDP · DHCP</div>
+            </div>
+            <span class="profile-pick-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span>
+          </button>
+          <button type="button" class="profile-pick-row" onclick="selectJobProfile('a',event)">
+            <div>
+              <div class="profile-pick-name">Warehouse Entrance</div>
+              <div class="profile-pick-summary">RS485 · Static IP</div>
+            </div>
+            <span class="profile-pick-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></span>
+          </button>
         </div>
-        <button class="btn-primary-full" id="a-apply-config-btn" onclick="applyStagedConfig('a',event)">Apply Configuration</button>
+        <button class="btn-primary-full" id="a-apply-config-btn" onclick="applyStagedConfig('a',event)">Apply Job Profile</button>
         <button class="btn-ghost-full" onclick="skipStagedConfig('a')">Set Up Manually Instead</button>
       </div>
 
@@ -802,15 +821,21 @@ function trySaveMandatorySec(v){
     showScreen(v, 'apply-config', '');
   }, 900);
 }
+function selectJobProfile(v, evt){
+  document.querySelectorAll('#' + v + '-job-profile-picker .profile-pick-row').forEach(r => r.classList.remove('active'));
+  evt.currentTarget.classList.add('active');
+}
 function applyStagedConfig(v, evt){
   const btn = evt.currentTarget;
+  const active = document.querySelector('#' + v + '-job-profile-picker .profile-pick-row.active .profile-pick-name');
+  const profileName = active ? active.textContent : 'the selected profile';
   btn.disabled = true;
   btn.textContent = 'Applying…';
   setTimeout(()=>{
-    document.getElementById(v+'-complete-sub').textContent = 'Login and password are set, and the staged configuration has been applied. Your device is ready to use.';
+    document.getElementById(v+'-complete-sub').textContent = 'Login and password are set, and the "' + profileName + '" profile has been applied. Your device is ready to use.';
     showScreen(v, 'complete', '');
     btn.disabled = false;
-    btn.textContent = 'Apply Configuration';
+    btn.textContent = 'Apply Job Profile';
   }, 900);
 }
 function skipStagedConfig(v){

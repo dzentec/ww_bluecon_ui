@@ -108,32 +108,6 @@
   .rssi-bars.fair i:nth-child(-n+3) { background: #D98A2B; }
   .rssi-bars.weak i:nth-child(-n+1) { background: var(--color-danger); }
 
-  /* ---------- Settings card ---------- */
-  .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-top: 1px solid var(--color-border); gap: 14px; }
-  .setting-row:first-of-type { border-top: none; }
-  .setting-text { min-width: 0; }
-  .setting-label { font-size: var(--text-body); font-weight: 500; color: var(--color-text); }
-  .setting-helper { font-size: 12px; color: var(--color-text-faint); font-style: italic; margin-top: 3px; line-height: 1.4; }
-  .field-select { padding: 8px 10px; border: 1.5px solid var(--color-border); border-radius: 10px; font-size: 14px; color: var(--color-text); background: #fff; flex-shrink: 0; }
-
-  .switch { position: relative; width: 42px; height: 25px; flex-shrink: 0; display: inline-block; }
-  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .switch .track { position: absolute; inset: 0; background: var(--color-border); border-radius: 999px; transition: background 0.2s ease; cursor: pointer; }
-  .switch .thumb { position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; background: #fff; border-radius: 50%; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
-  .switch input:checked ~ .track { background: var(--color-primary); }
-  .switch input:checked ~ .track .thumb { transform: translateX(17px); }
-
-  .save-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 14px; gap: 12px; }
-  .error-text { color: var(--color-danger); font-size: 12px; margin-right: auto; }
-  .btn-save {
-    appearance: none; border: none; background: var(--color-primary); color: #fff; font-size: 14px; font-weight: 600;
-    padding: 10px 22px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .btn-save:disabled { background: #C9CCD1; color: #fff; cursor: not-allowed; }
-  .btn-save .spinner { display: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; animation: spin 0.8s linear infinite; }
-  .btn-save.loading .spinner { display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ---------- Bottom nav: floating, frosted-glass dock ---------- */
   .bottom-nav {
@@ -228,7 +202,6 @@
           <div class="info-row"><span class="info-label">IP Address</span><span class="info-value" id="b-network-ip">192.168.1.201</span></div>
         </div>
       </div>
-      <div id="b-settings-slot"></div>
       <div class="section-flat" style="padding-top:0;">
         <div class="section-heading">About</div>
         <div class="info-row"><span class="info-label">App Version</span><span class="info-value">1.0.0 (build 1)</span></div>
@@ -241,39 +214,10 @@
 </div>
 
 <!-- ============ Shared templates (cloned into each variant's slots at load) ============ -->
-<template id="tpl-settings">
-  <div class="section-card">
-    <div class="section-heading" style="margin-top:0;">Settings</div>
-    <div class="setting-row">
-      <div class="setting-text"><div class="setting-label">System Beep</div></div>
-      <label class="switch"><input type="checkbox" checked onchange="markDirty('{{V}}')"><span class="track"><span class="thumb"></span></span></label>
-    </div>
-    <div class="setting-row">
-      <div class="setting-text"><div class="setting-label">Display RFID Codes</div></div>
-      <label class="switch"><input type="checkbox" onchange="markDirty('{{V}}')"><span class="track"><span class="thumb"></span></span></label>
-    </div>
-    <div class="setting-row">
-      <div class="setting-text"><div class="setting-label">Reboot if no radio link for</div></div>
-      <select class="field-select" onchange="markDirty('{{V}}')">
-        <option>5 min</option><option>10 min</option><option selected>15 min</option><option>30 min</option><option>60 min</option>
-      </select>
-    </div>
-    <div class="setting-row">
-      <div class="setting-text">
-        <div class="setting-label" id="{{V}}-role-setting-label">Daily Auto Reboot</div>
-        <div class="setting-helper" id="{{V}}-role-setting-helper" style="display:none;">Blink and beep on the RFID reader during pair search.</div>
-      </div>
-      <label class="switch"><input type="checkbox" onchange="markDirty('{{V}}')"><span class="track"><span class="thumb"></span></span></label>
-    </div>
-    <div class="save-row">
-      <span class="error-text" id="{{V}}-error-text" style="display:none;"></span>
-      <button class="btn-save" id="{{V}}-save-btn" disabled onclick="trySave('{{V}}')">
-        <span class="spinner"></span><span>Save</span>
-      </button>
-    </div>
-  </div>
-</template>
-
+<!-- Device-behavior settings (System Beep/Display RFID Codes/Reboot timer/Daily Auto Reboot) moved
+     to Settings' new "Behavior" tab 2026-11-11 (P1.2 of the UI/UX refactor plan) — this was a
+     settings card, not system-status info, and didn't belong on a read-only info screen. See
+     demo/settings.html and MANIFEST.md for the full detail. -->
 <template id="tpl-nav">
   <div class="bottom-nav">
     <a class="nav-item" href="home.html" style="text-decoration:none;">
@@ -300,11 +244,9 @@
 </template>
 
 <script>
-const state = { a: { dirty: false, role: 'gate', failNext: false }, b: { dirty: false, role: 'gate', failNext: false } };
+const state = { a: { role: 'gate' }, b: { role: 'gate' } };
 
 function injectTemplates(v) {
-  const settingsHtml = document.getElementById('tpl-settings').innerHTML.split('{{V}}').join(v);
-  document.getElementById(v + '-settings-slot').innerHTML = settingsHtml;
   const navHtml = document.getElementById('tpl-nav').innerHTML.split('{{V}}').join(v);
   document.getElementById(v + '-nav-slot').innerHTML = navHtml;
 }
@@ -317,36 +259,12 @@ function showVariant(id, evt) {
   evt.target.classList.add('active');
 }
 
-function markDirty(v) {
-  state[v].dirty = true;
-  const btn = document.getElementById(v + '-save-btn');
-  if (btn) btn.disabled = false;
-  const err = document.getElementById(v + '-error-text');
-  if (err) { err.style.display = 'none'; err.textContent = ''; }
-}
-
 function setRole(v, role, evt) {
   state[v].role = role;
   document.querySelectorAll('#variant-' + v + ' .dev-strip .dev-btn[data-role]').forEach(b => b.classList.toggle('current', b.dataset.role === role));
   document.getElementById(v + '-role-badge').textContent = role === 'gate' ? 'Central Unit' : 'Remote Unit';
-  const label = document.getElementById(v + '-role-setting-label');
-  const helper = document.getElementById(v + '-role-setting-helper');
-  if (role === 'gate') {
-    label.textContent = 'Daily Auto Reboot';
-    helper.style.display = 'none';
-  } else {
-    label.textContent = 'Pair Search Indication';
-    helper.textContent = 'Blink and beep on the RFID reader during pair search.';
-    helper.style.display = 'block';
-  }
   // Bottom-nav's 3rd slot is now the shared "Settings" item (Radio/Relay Failsafe moved
   // inside it as role-filtered tabs) — its label no longer changes with role.
-}
-
-function toggleFail(v, evt) {
-  state[v].failNext = !state[v].failNext;
-  evt.target.textContent = 'Fail next save: ' + (state[v].failNext ? 'On' : 'Off');
-  evt.target.classList.toggle('current', state[v].failNext);
 }
 
 function markCurrent(v, group, level) {
@@ -398,27 +316,6 @@ function toast(v, msg, isError) {
   el.classList.add('show');
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.remove('show'), 2600);
-}
-
-function trySave(v) {
-  if (!state[v].dirty) return;
-  const btn = document.getElementById(v + '-save-btn');
-  btn.classList.add('loading');
-  btn.disabled = true;
-  setTimeout(() => {
-    btn.classList.remove('loading');
-    if (state[v].failNext) {
-      const err = document.getElementById(v + '-error-text');
-      err.textContent = "Couldn't save — check your connection and try again.";
-      err.style.display = 'inline';
-      toast(v, "Couldn't save — check your connection and try again.", true);
-      btn.disabled = false;
-    } else {
-      toast(v, 'Saved');
-      state[v].dirty = false;
-      btn.disabled = true;
-    }
-  }, 900);
 }
 
 function navClick(v, item, evt) {

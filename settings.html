@@ -166,6 +166,12 @@
   .btn-outline-full { appearance: none; width: 100%; background: transparent; color: var(--color-primary); border: 1.5px dashed var(--color-border); font-size: 14px; font-weight: 600; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; margin-top: 14px; transition: all 0.15s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-outline-full:hover { border-color: var(--color-accent); color: var(--color-accent); border-style: solid; }
 
+  .job-profile-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 0; border-top: 1px solid var(--color-border); }
+  .job-profile-row:first-child { border-top: none; }
+  .job-profile-info { min-width: 0; }
+  .job-profile-name { font-size: 14px; font-weight: 600; color: var(--color-text); }
+  .job-profile-summary { font-size: 12px; color: var(--color-text-faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
   .radar-stage { position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .radar-ring { position: absolute; border-radius: 50%; border: 1.5px solid var(--color-accent); opacity: 0; animation: radar-pulse 2.4s ease-out infinite; }
   @keyframes radar-pulse { 0% { width: var(--ring-start, 60px); height: var(--ring-start, 60px); opacity: 0.65; } 100% { width: var(--ring-end, 150px); height: var(--ring-end, 150px); opacity: 0; } }
@@ -226,6 +232,7 @@
     <button id="tab-dataport-btn" onclick="showTab('dataport',event)">Data Port</button>
     <button id="tab-io-btn" onclick="showTab('io',event)">I/O Ports</button>
     <button id="tab-network-btn" onclick="showTab('network',event)">Network</button>
+    <button id="tab-behavior-btn" onclick="showTab('behavior',event)">Behavior</button>
   </div>
 
   <div class="content">
@@ -260,14 +267,24 @@
         </button>
       </div>
 
-      <div class="section-card">
-        <div class="section-heading" style="margin-bottom:0;">Remote Unit Configuration</div>
-        <div class="field-helper" style="margin:4px 0 12px;">Bundle this unit's Data Port, I/O Ports, and Network settings into a configuration you can apply to a new Remote Unit during its own setup — instead of entering every field by hand.</div>
-        <div class="field-helper" id="stage-config-status" style="margin:0 0 12px;font-style:normal;">No configuration staged yet.</div>
-        <button class="btn-outline-full" id="stage-config-btn" onclick="stageRemoteConfig()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12-4-4m4 4 4-4M5 21h14"/></svg>
-          Create Remote Unit Configuration
-        </button>
+      <div class="section-card" id="job-profile-card">
+        <div class="section-heading" style="margin-bottom:0;">Job Profile</div>
+        <div class="field-helper" style="margin:4px 0 12px;">Save this unit's Data Port, I/O Ports, and Network settings as a named profile — reuse it on any new device instead of entering every field by hand.</div>
+        <div id="job-profile-list"></div>
+        <div class="field-helper" id="job-profile-empty" style="margin:0 0 12px;">No profiles saved yet.</div>
+        <div id="job-profile-add-row">
+          <button class="btn-outline-full" onclick="showJobProfileNameField()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12-4-4m4 4 4-4M5 21h14"/></svg>
+            Save as Job Profile
+          </button>
+        </div>
+        <div id="job-profile-name-row" style="display:none;margin-top:14px;">
+          <input class="field-input" id="job-profile-name-input" placeholder="Profile name (e.g. Downtown Branch)" style="margin-bottom:10px;">
+          <div style="display:flex;gap:10px;">
+            <button class="btn-ghost-full" style="flex:1;padding:10px;border:1.5px solid var(--color-border);border-radius:var(--radius-sm);" onclick="cancelJobProfileName()">Cancel</button>
+            <button class="btn-primary-full" style="flex:1;" onclick="saveJobProfile()">Save</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -550,6 +567,34 @@
         </div>
       </div>
     </div>
+
+    <!-- ============ Tab 5: Behavior (moved from System Info 2026-11-11, P1.2 of the UI/UX refactor plan) ============ -->
+    <div class="settings-tab-panel" id="panel-behavior">
+      <div class="section-card">
+        <div class="section-heading">Device Behavior</div>
+        <div class="toggle-row">
+          <div class="field-text"><div class="field-label">System Beep</div></div>
+          <label class="switch"><input type="checkbox" checked onchange="markDirty('behavior')"><span class="track"><span class="thumb"></span></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="field-text"><div class="field-label">Display RFID Codes</div></div>
+          <label class="switch"><input type="checkbox" onchange="markDirty('behavior')"><span class="track"><span class="thumb"></span></span></label>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Reboot if no radio link for</label>
+          <select class="field-select-full" onchange="markDirty('behavior')">
+            <option>5 min</option><option>10 min</option><option selected>15 min</option><option>30 min</option><option>60 min</option>
+          </select>
+        </div>
+        <div class="toggle-row" style="margin-bottom:0;">
+          <div class="field-text">
+            <div class="field-label" id="behavior-role-label">Daily Auto Reboot</div>
+            <div class="field-helper" id="behavior-role-helper" style="display:none;margin-top:3px;">Blink and beep on the RFID reader during pair search.</div>
+          </div>
+          <label class="switch"><input type="checkbox" onchange="markDirty('behavior')"><span class="track"><span class="thumb"></span></span></label>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="pair-overlay" id="pair-overlay">
@@ -618,12 +663,12 @@ const state = {
   role: 'gate',
   dataPortMode: 'osdp',
   hasW2Board: true,
-  dirty: { radio:false, reader:false, io:false, iorelay:false, alarmout:false, boardrelay:false, conn:false },
+  dirty: { radio:false, reader:false, io:false, iorelay:false, alarmout:false, boardrelay:false, conn:false, behavior:false },
   failNext: false,
   outcome: 'found',
   activeTab: 'role',
 };
-const TAB_DIRTY_KEYS = { role: ['radio'], dataport: ['reader'], io: ['io','iorelay','boardrelay','alarmout'], network: ['conn'] };
+const TAB_DIRTY_KEYS = { role: ['radio'], dataport: ['reader'], io: ['io','iorelay','boardrelay','alarmout'], network: ['conn'], behavior: ['behavior'] };
 const W2_MAP = {
   gate: [['REX 1','Output'],['DPS 1','Output'],['REX 2','Output'],['DPS 2','Output']],
   edge: [['REX 1','Input'],['DPS 1','Input'],['REX 2','Input'],['DPS 2','Input']],
@@ -779,6 +824,17 @@ function setRole(role, evt){
   document.getElementById('role-badge').textContent = role === 'gate' ? 'Central Unit' : 'Remote Unit';
   document.getElementById('role-gate-content').style.display = role === 'gate' ? '' : 'none';
   document.getElementById('io-alarmout-card').style.display = role === 'gate' ? '' : 'none';
+  document.getElementById('job-profile-card').style.display = role === 'gate' ? '' : 'none';
+  const behaviorLabel = document.getElementById('behavior-role-label');
+  const behaviorHelper = document.getElementById('behavior-role-helper');
+  if(role === 'gate'){
+    behaviorLabel.textContent = 'Daily Auto Reboot';
+    behaviorHelper.style.display = 'none';
+  } else {
+    behaviorLabel.textContent = 'Pair Search Indication';
+    behaviorHelper.textContent = 'Blink and beep on the RFID reader during pair search.';
+    behaviorHelper.style.display = 'block';
+  }
   evt.target.parentElement.querySelectorAll('.dev-btn').forEach(b=>b.classList.remove('current'));
   evt.target.classList.add('current');
   renderIOMap();
@@ -891,10 +947,54 @@ function confirmPair(){
   toast('Remote Unit paired');
 }
 
-/* ---- Remote Unit Configuration (staging for a new Remote Unit's setup wizard) ---- */
-function stageRemoteConfig(){
-  document.getElementById('stage-config-status').textContent = 'Configuration staged — ready to apply from a new Remote Unit’s Setup Wizard.';
-  toast('Remote Unit configuration staged');
+/* ---- Job Profile (portable Data Port/I/O Ports/Network preset, applied during any new device's setup wizard) ---- */
+const DATAPORT_LABELS = { osdp: 'OSDP', wiegand: 'Wiegand', rs485: 'RS485' };
+let jobProfiles = [];
+function showJobProfileNameField(){
+  document.getElementById('job-profile-add-row').style.display = 'none';
+  document.getElementById('job-profile-name-row').style.display = 'block';
+  document.getElementById('job-profile-name-input').focus();
+}
+function cancelJobProfileName(){
+  document.getElementById('job-profile-name-input').value = '';
+  document.getElementById('job-profile-name-row').style.display = 'none';
+  document.getElementById('job-profile-add-row').style.display = 'block';
+}
+function saveJobProfile(){
+  const input = document.getElementById('job-profile-name-input');
+  const name = input.value.trim();
+  if(!name) return;
+  const ipMode = document.querySelector('input[name=ipconfig]:checked').value;
+  const summary = DATAPORT_LABELS[state.dataPortMode] + ' · ' + (ipMode === 'dhcp' ? 'DHCP' : 'Static IP');
+  jobProfiles.push({ name, summary });
+  renderJobProfiles();
+  cancelJobProfileName();
+  toast('Job profile saved');
+}
+function deleteJobProfile(index){
+  jobProfiles.splice(index, 1);
+  renderJobProfiles();
+}
+function renderJobProfiles(){
+  const list = document.getElementById('job-profile-list');
+  const empty = document.getElementById('job-profile-empty');
+  if(!jobProfiles.length){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = jobProfiles.map((p, i) => `
+    <div class="job-profile-row">
+      <div class="job-profile-info">
+        <div class="job-profile-name">${p.name}</div>
+        <div class="job-profile-summary">${p.summary}</div>
+      </div>
+      <button class="icon-btn" onclick="deleteJobProfile(${i})" title="Delete">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-8 0 1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/></svg>
+      </button>
+    </div>
+  `).join('');
 }
 
 /* ---- Data Port ---- */

@@ -122,6 +122,23 @@ no server required.
   strip (Signal, Power) to the device card, reusing System Info's own status-indicator component.
   "Add Expansion Board" shrank from a full-width CTA to a compact pill. See
   `.planning/sketches/014-home`'s README for the full detail.
+- **2026-11-11 Settings gains a 5th tab, "Behavior" — System Info's "Settings" card moved out
+  (P1.2 of the same plan).** System Beep/Display RFID Codes/Reboot-if-no-radio-link timer/Daily
+  Auto Reboot (role-relabeled to Pair Search Indication on Remote Unit) was a settings card sitting
+  on a read-only status screen — moved to Settings as its own tab, wired into the P0.1 Save-All
+  bar. System Info keeps its role toggle (still updates the header badge) but no longer has a Save
+  button on it at all — it's purely read-only again. See `.planning/sketches/003-system-info` and
+  `011-settings` READMEs for the full detail.
+- **2026-11-11 Settings: "Remote Unit Configuration" generalized into multi-profile "Job
+  Profile" (P1.1 of the same plan).** Per the plan's wording ("обобщается до переносимого
+  профиля... на любое новое устройство"), and the user's choice to go beyond a rename: the single
+  staged config became a named, saveable, deletable list of profiles. "Save as Job Profile" now
+  prompts for a name inline before saving; each saved profile shows its own one-line summary (e.g.
+  "OSDP · DHCP") and a delete action. Setup Wizard's matching screen is now **"Apply Job
+  Profile?"** — a picker of named profiles (radio-style selection) instead of one static summary
+  card; the chosen profile's name appears in the Setup Complete subtitle. Also fixed: this card
+  wasn't role-gated in demo (sketch 011 already gated it) — now hidden for Remote Unit role here
+  too. See `.planning/sketches/011-settings` and `013-init-wizard` READMEs for the full detail.
 
 ## What's included
 | Screen | Source sketch | Winner |
