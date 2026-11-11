@@ -8,14 +8,14 @@
   --color-surface: #FFFFFF;
   --color-border: #E7E9EC;
   --color-text: #1B2430;
-  --color-text-muted: rgba(27, 36, 48, 0.56);
-  --color-text-faint: rgba(27, 36, 48, 0.38);
+  --color-text-muted: rgba(27, 36, 48, 0.68);
+  --color-text-faint: rgba(27, 36, 48, 0.65);
 
   --color-primary: #1B2430;       /* primary buttons, key status text, active nav/role badge */
   --color-primary-hover: #0F151D;
   --color-accent: #3E7BFA;        /* link/info, secondary/outlined button borders */
-  --color-danger: #E5484D;        /* errors, validation failures */
-  --color-success: #2FB344;       /* "Saved" confirmations */
+  --color-danger: #D34247;        /* errors, validation failures */
+  --color-success: #2BA23E;       /* "Saved" confirmations */
   --color-locked: rgba(0, 0, 0, 0.38); /* mutual-exclusivity-locked fields — never red */
 
   --color-danger-bg: #FDECEC;

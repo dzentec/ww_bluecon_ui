@@ -8,9 +8,9 @@
 <style>
   :root {
     --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
-    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.68); --color-text-faint: rgba(27, 36, 48, 0.65);
     --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
-    --color-danger: #E5484D; --color-success: #2FB344;
+    --color-danger: #D34247; --color-success: #2BA23E;
     --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
     --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
     --text-heading: 20px; --text-body: 15px; --text-label: 13px;
@@ -26,7 +26,7 @@
 
   .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
   .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
-  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1C7F2C; }
   .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
   .shell-header-right { display: flex; align-items: center; gap: 10px; }
   .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
@@ -49,6 +49,14 @@
   .icon-btn { appearance: none; border: none; background: #F0F1F3; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); cursor: pointer; transition: all 0.15s ease; }
   .icon-btn:hover { background: #E7E9EC; color: var(--color-text); }
   .icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
+
+  .accordion-toggle { cursor: pointer; }
+  .accordion-right { display: flex; align-items: center; gap: 8px; min-width: 0; flex-shrink: 0; margin-left: 10px; }
+  .accordion-summary { font-size: 12px; color: var(--color-text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+  .accordion-chevron { flex-shrink: 0; color: var(--color-text-muted); transition: transform 0.2s ease; }
+  .section-card.collapsed .accordion-chevron { transform: rotate(-90deg); }
+  .accordion-body { overflow: hidden; max-height: 2000px; opacity: 1; margin-top: 14px; transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.2s ease; }
+  .section-card.collapsed .accordion-body { max-height: 0; opacity: 0; margin-top: 0; }
 
   .safety-callout { display: flex; gap: 10px; background: #FBEFDD; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; align-items: flex-start; }
   .safety-callout svg { color: #9A5A12; flex-shrink: 0; margin-top: 1px; }
@@ -87,6 +95,8 @@
 
   .mode-fields { display: none; }
   .mode-fields.active { display: block; }
+  .manual-timing-fields { display: none; }
+  .manual-timing-fields.show { display: block; }
 
   .subsection-divider { height: 1px; background: var(--color-border); margin: 16px 0; }
   .subsection-heading { font-size: 13px; font-weight: 600; color: var(--color-text); margin-bottom: 10px; }
@@ -107,8 +117,15 @@
   .io-seg { display: flex; background: #EAECEF; border-radius: 8px; padding: 2px; width: 150px; }
   .io-seg button { flex: 1; appearance: none; border: none; background: transparent; color: var(--color-text-muted); font-size: 11.5px; font-weight: 600; padding: 6px 2px; border-radius: 6px; cursor: pointer; }
   .io-seg button.active { background: #fff; color: var(--color-primary); box-shadow: 0 1px 4px rgba(27,36,48,0.12); }
-  .io-supervision { margin-top: 2px; }
-  .io-supervision select { font-size: 13px; padding: 9px 11px; }
+  .io-port-locked-tag { font-size: 11px; font-weight: 600; color: var(--color-text-muted); background: #EEF0F2; padding: 6px 11px; border-radius: 8px; }
+  .board-status-pill { font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: var(--radius-pill); flex-shrink: 0; }
+  .board-status-pill.good { color: #1E8A30; background: var(--color-success-bg); }
+  .board-status-pill.bad { color: #C23237; background: var(--color-danger-bg); }
+
+  .iomap-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--color-border); }
+  .iomap-row:first-of-type { border-top: none; }
+  .iomap-row .iomap-port { font-size: 13px; color: var(--color-text); }
+  .iomap-row .iomap-value { font-size: 13px; font-weight: 600; color: var(--color-text); }
 
   .save-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 16px; gap: 12px; }
   .save-row .field-error { margin-top: 0; margin-right: auto; }
@@ -116,6 +133,11 @@
   .btn-save:disabled { background: #C9CCD1; color: #fff; cursor: not-allowed; }
   .btn-save .spinner { display: none; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; animation: spin 0.8s linear infinite; }
   .btn-save.loading .spinner { display: inline-block; }
+
+  .save-all-bar { position: absolute; left: 16px; right: 16px; bottom: 84px; background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: var(--radius-sm); padding: 10px 10px 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 10px 24px rgba(27,36,48,0.14); transform: translateY(16px); opacity: 0; pointer-events: none; transition: all 0.2s ease; z-index: 40; }
+  .save-all-bar.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .save-all-text { font-size: 13px; font-weight: 500; color: var(--color-text); }
+  .save-all-bar .btn-save { padding: 9px 18px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ---------- Paired edge rows + full-screen pairing (sketch 005 winner A) ---------- */
@@ -165,7 +187,7 @@
 
   .bottom-nav { display: flex; position: absolute; left: 20px; right: 20px; bottom: 18px; z-index: 20; background: rgba(255, 255, 255, 0.68); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); border-radius: 26px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 12px 32px rgba(27, 36, 48, 0.18), 0 2px 8px rgba(27, 36, 48, 0.08); padding: 7px 4px; transition: visibility 0.1s; }
   .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; color: var(--color-text-faint); cursor: pointer; background: none; border: none; font-family: var(--font-sans); min-width: 0; }
-  .nav-icon { display: flex; align-items: center; justify-content: center; width: 50px; height: 28px; border-radius: var(--radius-pill); background: transparent; transition: background-color 0.25s cubic-bezier(.4,0,.2,1), color 0.2s ease; color: inherit; }
+  .nav-icon { display: flex; align-items: center; justify-content: center; width: 44px; height: 28px; border-radius: var(--radius-pill); background: transparent; transition: background-color 0.25s cubic-bezier(.4,0,.2,1), color 0.2s ease; color: inherit; }
   .nav-item.active .nav-icon { background: rgba(27, 36, 48, 0.1); }
   .nav-item.active { color: var(--color-primary); }
   .nav-label { font-size: 9.5px; font-weight: 500; white-space: nowrap; }
@@ -180,6 +202,7 @@
   .toast { position: absolute; left: 16px; right: 16px; bottom: 90px; background: var(--color-primary); color: #fff; padding: 12px 16px; border-radius: var(--radius-sm); font-size: var(--text-label); font-weight: 500; transform: translateY(40px); opacity: 0; transition: all 0.25s ease; z-index: 50; box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.error { background: var(--color-danger); }
+  .toast.bar-shown { bottom: 156px; }
 
   .caption-row { margin: 16px auto 0; max-width: 375px; font-size: 12px; color: #5b6572; }
   #sketch-tools { position: fixed; bottom: 12px; right: 12px; z-index: 9999; font-family: system-ui; font-size: 12px; background: rgba(0,0,0,0.75); color: #fff; padding: 8px 12px; border-radius: 10px; opacity: 0.45; transition: opacity 0.2s ease; display: flex; gap: 10px; align-items: center; }
@@ -200,98 +223,67 @@
   <div class="screen-title">Settings</div>
   <div class="settings-tabs">
     <button class="active" id="tab-role-btn" onclick="showTab('role',event)">Radio</button>
-    <button onclick="showTab('dataport',event)">Data Port</button>
-    <button onclick="showTab('io',event)">I/O Ports</button>
-    <button onclick="showTab('network',event)">Network</button>
+    <button id="tab-dataport-btn" onclick="showTab('dataport',event)">Data Port</button>
+    <button id="tab-io-btn" onclick="showTab('io',event)">I/O Ports</button>
+    <button id="tab-network-btn" onclick="showTab('network',event)">Network</button>
   </div>
 
   <div class="content">
-    <!-- ============ Tab 1: Radio (gate) / Relay Failsafe (edge) ============ -->
+    <!-- ============ Tab 1: Radio ============ -->
     <div class="settings-tab-panel active" id="panel-role">
-
-      <div id="role-gate-content">
-        <div class="section-card">
-          <div class="section-heading">Radio Configuration</div>
-          <div class="field-group" style="margin-bottom:0;">
-            <label class="field-label">Region</label>
-            <select class="field-select-full" onchange="markDirty('radio')">
-              <option selected>USA / Canada / Mexico — 915 MHz ISM</option>
-              <option>Brazil — 915 MHz ISM</option>
-              <option>Colombia — 915 MHz ISM</option>
-              <option>Europe — 868 MHz SRD</option>
-              <option>Australia — 915 MHz ISM</option>
-            </select>
-            <div class="field-helper">Sets the radio's regulatory band for your installation's country — not a performance preference.</div>
-          </div>
-          <div class="save-row">
-            <button class="btn-save" id="radio-save-btn" disabled onclick="trySave('radio')">
-              <span class="spinner"></span><span>Save</span>
-            </button>
-          </div>
+      <div class="section-card">
+        <div class="section-heading">Radio Configuration</div>
+        <div class="field-group" style="margin-bottom:0;">
+          <label class="field-label">Region</label>
+          <select class="field-select-full" onchange="markDirty('radio')">
+            <option selected>USA / Canada / Mexico — 915 MHz ISM</option>
+            <option>Brazil — 915 MHz ISM</option>
+            <option>Colombia — 915 MHz ISM</option>
+            <option>Europe — 868 MHz SRD</option>
+            <option>Australia — 915 MHz ISM</option>
+          </select>
+          <div class="field-helper">Sets the radio's regulatory band for your installation's country — not a performance preference.</div>
         </div>
+      </div>
 
-        <div class="section-card">
-          <div class="card-head-row">
-            <div class="section-heading" style="margin-bottom:0;">Paired Remote Unit</div>
-            <button class="icon-btn" id="refresh-btn" onclick="refreshEdges()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v5h-5"/></svg>
-            </button>
-          </div>
-          <div class="edge-list" id="edge-list"></div>
-          <button class="btn-outline-full" id="pair-btn" onclick="openPairOverlay()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            Pair Remote Unit
+      <div class="section-card" id="role-gate-content">
+        <div class="card-head-row">
+          <div class="section-heading" style="margin-bottom:0;">Paired Remote Unit</div>
+          <button class="icon-btn" id="refresh-btn" onclick="refreshEdges()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v5h-5"/></svg>
           </button>
         </div>
+        <div class="edge-list" id="edge-list"></div>
+        <button class="btn-outline-full" id="pair-btn" onclick="openPairOverlay()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Pair Remote Unit
+        </button>
       </div>
 
-      <div id="role-edge-content" style="display:none;">
-        <div class="section-card">
-          <div class="safety-callout">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1.6 1.6 0 0 0 1.4 2.5h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
-            <span class="safety-callout-text">How a relay behaves on power or radio-link loss can affect fire-egress and security compliance for this site — check local code before changing it.</span>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Blocking Prevention Timer</label>
-            <select class="field-select-full" onchange="markDirty('relay')">
-              <option>Off</option><option selected>5 min</option><option>10 min</option><option>15 min</option><option>30 min</option><option>60 min</option>
-            </select>
-            <div class="field-helper">Automatically releases a relay that's been continuously activated for this long, so it can't stay blocked indefinitely. Off disables the timer.</div>
-          </div>
-          <div class="subsection-divider"></div>
-          <div class="subsection-heading">Relay 1</div>
-          <div class="field-label">On power or radio-link loss</div>
-          <div class="seg-2col">
-            <button type="button" class="seg-btn-2line active" onclick="setRelay(event)"><span class="seg-main">Fail Secure</span><span class="seg-sub">Stays locked</span></button>
-            <button type="button" class="seg-btn-2line" onclick="setRelay(event)"><span class="seg-main">Fail Safe</span><span class="seg-sub">Unlocks</span></button>
-          </div>
-          <div class="subsection-divider"></div>
-          <div class="subsection-heading">Relay 2</div>
-          <div class="field-label">On power or radio-link loss</div>
-          <div class="seg-2col">
-            <button type="button" class="seg-btn-2line" onclick="setRelay(event)"><span class="seg-main">Fail Secure</span><span class="seg-sub">Stays locked</span></button>
-            <button type="button" class="seg-btn-2line active" onclick="setRelay(event)"><span class="seg-main">Fail Safe</span><span class="seg-sub">Unlocks</span></button>
-          </div>
-          <div class="save-row">
-            <button class="btn-save" id="relay-save-btn" disabled onclick="trySave('relay')">
-              <span class="spinner"></span><span>Save</span>
-            </button>
-          </div>
-        </div>
+      <div class="section-card">
+        <div class="section-heading" style="margin-bottom:0;">Remote Unit Configuration</div>
+        <div class="field-helper" style="margin:4px 0 12px;">Bundle this unit's Data Port, I/O Ports, and Network settings into a configuration you can apply to a new Remote Unit during its own setup — instead of entering every field by hand.</div>
+        <div class="field-helper" id="stage-config-status" style="margin:0 0 12px;font-style:normal;">No configuration staged yet.</div>
+        <button class="btn-outline-full" id="stage-config-btn" onclick="stageRemoteConfig()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12-4-4m4 4 4-4M5 21h14"/></svg>
+          Create Remote Unit Configuration
+        </button>
       </div>
-
     </div>
 
     <!-- ============ Tab 2: Data Port ============ -->
     <div class="settings-tab-panel" id="panel-dataport">
       <div class="section-card">
         <div class="section-heading">Data Port</div>
-        <div class="section-intro">This unit has one physical reader port — set it to match the reader you've wired to it.</div>
+        <div class="section-intro">This unit has one physical reader port — set it to match the reader you've wired to it. This also sets the radio module's operating mode (FSK for OSDP, LoRa for Wiegand/RS485) and how I/O 1–4 are assigned — see I/O Port Assignment below.</div>
         <div class="mode-segmented">
-          <button type="button" class="active" onclick="setPortMode('wiegand',event)">Wiegand</button>
-          <button type="button" onclick="setPortMode('osdp',event)">OSDP</button>
+          <button type="button" id="dataport-wiegand-btn" disabled title="Unavailable — W2 Expansion Board installed" onclick="setPortMode('wiegand',event)">Wiegand</button>
+          <button type="button" class="active" onclick="setPortMode('osdp',event)">OSDP</button>
+          <button type="button" onclick="setPortMode('rs485',event)">RS485</button>
         </div>
-        <div class="mode-fields active" id="wiegand-fields">
+        <div class="field-helper" id="dataport-w2-note" style="margin:-4px 0 10px;">Wiegand is unavailable — the W2 Expansion Board already provides 2 Wiegand ports (see Expansion Boards on the I/O Ports tab).</div>
+        <div class="field-helper" id="dataport-term-note" style="margin:-4px 0 16px;"></div>
+        <div class="mode-fields" id="wiegand-fields">
           <div class="field-group">
             <label class="field-label">Reader Type</label>
             <select class="field-select-full" id="reader-type" onchange="markDirty('reader')">
@@ -302,20 +294,22 @@
               <option>Wiegand 48 Corporate 1000</option><option>RAW</option>
             </select>
           </div>
-          <div class="toggle-row">
-            <div class="field-text"><div class="field-label">Manual Timing</div></div>
+          <div class="toggle-row" style="margin-bottom:0;">
+            <div class="field-text"><div class="field-label">Manual Timing</div><div class="field-helper" style="margin-top:3px;">Set exact Pulse/Interpulse widths instead of using the Reader Type preset's built-in timing.</div></div>
             <label class="switch"><input type="checkbox" id="manual-input" onchange="setManualTiming(this.checked)"><span class="track"><span class="thumb"></span></span></label>
           </div>
-          <div class="field-group">
+          <div class="manual-timing-fields" id="manual-timing-fields">
+          <div class="field-group" style="margin-top:14px;">
             <label class="field-label">Pulse (μs)</label>
-            <input class="field-input" id="pulse" value="100" disabled oninput="markDirty('reader')">
+            <input class="field-input" id="pulse" value="100" oninput="markDirty('reader')">
           </div>
           <div class="field-group" style="margin-bottom:0;">
             <label class="field-label">Interpulse (μs)</label>
-            <input class="field-input" id="interpulse" value="1000" disabled oninput="markDirty('reader')">
+            <input class="field-input" id="interpulse" value="1000" oninput="markDirty('reader')">
+          </div>
           </div>
         </div>
-        <div class="mode-fields" id="osdp-fields">
+        <div class="mode-fields active" id="osdp-fields">
           <div class="field-group">
             <label class="field-label">Device Address</label>
             <input class="field-input" type="number" value="0" min="0" max="126" oninput="markDirty('reader')">
@@ -335,11 +329,15 @@
             <label class="switch"><input type="checkbox" checked onchange="markDirty('reader')"><span class="track"><span class="thumb"></span></span></label>
           </div>
         </div>
-        <div class="save-row">
-          <button class="btn-save" id="reader-save-btn" disabled onclick="trySave('reader')">
-            <span class="spinner"></span><span>Save</span>
-          </button>
+        <div class="mode-fields" id="rs485-fields">
+          <div class="field-helper" style="margin-top:0;" id="rs485-io-note">Raw RS485 passthrough — no Wiegand or OSDP reader protocol. I/O 1–4 default to a fixed direction (reassignable on the I/O Ports tab) instead of a reader function.</div>
         </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-heading">I/O Port Assignment</div>
+        <div class="section-intro" id="iomap-intro"></div>
+        <div id="iomap-rows"></div>
       </div>
     </div>
 
@@ -347,60 +345,174 @@
     <div class="settings-tab-panel" id="panel-io">
       <div class="section-card">
         <div class="section-heading">Supervised I/O</div>
-        <div class="section-intro">Each port can be wired as an input or output. Inputs support end-of-line resistor supervision, to detect a cut or shorted wire.</div>
+        <div class="section-intro">Each port can be wired as an input or output — that's the only setting per port. Wire faults (open/short circuit) are detected automatically.</div>
         <div class="io-port-row">
           <div class="io-port-head"><span class="io-port-name">I/O 1</span>
-            <div class="io-seg"><button type="button" class="active" onclick="setIOFunction(1,'input',event)">Input</button><button type="button" onclick="setIOFunction(1,'output',event)">Output</button></div>
+            <div class="io-seg" id="io1-seg"><button type="button" class="active" onclick="setIOFunction(1,'input',event)">Input</button><button type="button" onclick="setIOFunction(1,'output',event)">Output</button></div>
+            <span class="io-port-locked-tag" id="io1-locked" style="display:none;"></span>
           </div>
-          <div class="io-supervision" id="io1-super"><select class="field-select-full" onchange="markDirty('io')"><option>Not Supervised</option><option selected>Single EOL</option><option>Double EOL</option></select></div>
         </div>
         <div class="io-port-row">
           <div class="io-port-head"><span class="io-port-name">I/O 2</span>
-            <div class="io-seg"><button type="button" class="active" onclick="setIOFunction(2,'input',event)">Input</button><button type="button" onclick="setIOFunction(2,'output',event)">Output</button></div>
+            <div class="io-seg" id="io2-seg"><button type="button" class="active" onclick="setIOFunction(2,'input',event)">Input</button><button type="button" onclick="setIOFunction(2,'output',event)">Output</button></div>
+            <span class="io-port-locked-tag" id="io2-locked" style="display:none;"></span>
           </div>
-          <div class="io-supervision" id="io2-super"><select class="field-select-full" onchange="markDirty('io')"><option>Not Supervised</option><option selected>Single EOL</option><option>Double EOL</option></select></div>
         </div>
         <div class="io-port-row">
           <div class="io-port-head"><span class="io-port-name">I/O 3</span>
-            <div class="io-seg"><button type="button" onclick="setIOFunction(3,'input',event)">Input</button><button type="button" class="active" onclick="setIOFunction(3,'output',event)">Output</button></div>
+            <div class="io-seg" id="io3-seg"><button type="button" class="active" onclick="setIOFunction(3,'input',event)">Input</button><button type="button" onclick="setIOFunction(3,'output',event)">Output</button></div>
+            <span class="io-port-locked-tag" id="io3-locked" style="display:none;"></span>
           </div>
-          <div class="io-supervision" id="io3-super" style="display:none;"><select class="field-select-full" onchange="markDirty('io')"><option>Not Supervised</option><option selected>Single EOL</option><option>Double EOL</option></select></div>
         </div>
         <div class="io-port-row">
           <div class="io-port-head"><span class="io-port-name">I/O 4</span>
-            <div class="io-seg"><button type="button" class="active" onclick="setIOFunction(4,'input',event)">Input</button><button type="button" onclick="setIOFunction(4,'output',event)">Output</button></div>
+            <div class="io-seg" id="io4-seg"><button type="button" class="active" onclick="setIOFunction(4,'input',event)">Input</button><button type="button" onclick="setIOFunction(4,'output',event)">Output</button></div>
+            <span class="io-port-locked-tag" id="io4-locked" style="display:none;"></span>
           </div>
-          <div class="io-supervision" id="io4-super"><select class="field-select-full" onchange="markDirty('io')"><option>Not Supervised</option><option>Single EOL</option><option selected>Double EOL</option></select></div>
         </div>
-        <div class="save-row">
-          <button class="btn-save" id="io-save-btn" disabled onclick="trySave('io')">
-            <span class="spinner"></span><span>Save</span>
-          </button>
-        </div>
+        <div class="field-helper" id="io-locked-note" style="display:none;margin-top:10px;">I/O 1–4 are assigned by the current Data Port mode — change it on the Data Port tab to reassign them.</div>
       </div>
 
-      <div class="section-card" id="io-relay-rf-card">
-        <div class="section-heading">Relay State on RF Link Lost</div>
-        <div class="section-intro">Sets what each relay does if this unit loses its radio link to the paired Central Unit — independent of its behavior on power loss, set under Relay Failsafe.</div>
+      <div class="section-card collapsed" id="io-relay-card">
+        <div class="card-head-row accordion-toggle" onclick="toggleAccordion('io-relay-card')">
+          <div class="section-heading">Relay Failsafe</div>
+          <div class="accordion-right">
+            <span class="accordion-summary" id="iorelay-summary"></span>
+            <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="accordion-body">
+        <div class="section-intro">Each relay has its own fail state per trigger — power loss and radio-link loss are independent.</div>
+        <div class="field-group">
+          <label class="field-label">Blocking Prevention Timer</label>
+          <select class="field-select-full" onchange="markDirty('iorelay')">
+            <option>Off</option><option selected>5 min</option><option>10 min</option><option>15 min</option><option>30 min</option><option>60 min</option>
+          </select>
+          <div class="field-helper">Automatically releases a relay that's been continuously activated for this long, so it can't stay blocked indefinitely. Off disables the timer.</div>
+        </div>
+        <div class="subsection-divider"></div>
         <div class="subsection-heading">Relay 1</div>
-        <div class="seg-2col">
-          <button type="button" class="seg-btn-2line active" onclick="setRelayRf(event)"><span class="seg-main">Fail Secure</span><span class="seg-sub">Stays locked</span></button>
-          <button type="button" class="seg-btn-2line" onclick="setRelayRf(event)"><span class="seg-main">Fail Safe</span><span class="seg-sub">Unlocks</span></button>
+        <div class="io-port-head" style="margin-bottom:8px;">
+          <span class="field-label" style="margin-bottom:0;">On Power Loss</span>
+          <div class="io-seg" style="width:150px;">
+            <button type="button" class="active" onclick="setRelay(event)">Fail Secure</button>
+            <button type="button" onclick="setRelay(event)">Fail Safe</button>
+          </div>
+        </div>
+        <div class="io-port-head">
+          <span class="field-label" style="margin-bottom:0;">On Radio-Link Loss</span>
+          <div class="io-seg" style="width:150px;">
+            <button type="button" class="active" onclick="setRelayRf(event)">Fail Secure</button>
+            <button type="button" onclick="setRelayRf(event)">Fail Safe</button>
+          </div>
         </div>
         <div class="subsection-divider"></div>
         <div class="subsection-heading">Relay 2</div>
-        <div class="seg-2col">
-          <button type="button" class="seg-btn-2line" onclick="setRelayRf(event)"><span class="seg-main">Fail Secure</span><span class="seg-sub">Stays locked</span></button>
-          <button type="button" class="seg-btn-2line active" onclick="setRelayRf(event)"><span class="seg-main">Fail Safe</span><span class="seg-sub">Unlocks</span></button>
+        <div class="io-port-head" style="margin-bottom:8px;">
+          <span class="field-label" style="margin-bottom:0;">On Power Loss</span>
+          <div class="io-seg" style="width:150px;">
+            <button type="button" onclick="setRelay(event)">Fail Secure</button>
+            <button type="button" class="active" onclick="setRelay(event)">Fail Safe</button>
+          </div>
+        </div>
+        <div class="io-port-head">
+          <span class="field-label" style="margin-bottom:0;">On Radio-Link Loss</span>
+          <div class="io-seg" style="width:150px;">
+            <button type="button" onclick="setRelayRf(event)">Fail Secure</button>
+            <button type="button" class="active" onclick="setRelayRf(event)">Fail Safe</button>
+          </div>
         </div>
         <div class="safety-callout" style="margin-top:14px;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1.6 1.6 0 0 0 1.4 2.5h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
-          <span class="safety-callout-text">How a relay behaves on radio-link loss can affect fire-egress and security compliance for this site — check local code before changing it.</span>
+          <span class="safety-callout-text">How a relay behaves on power or radio-link loss can affect fire-egress and security compliance for this site — check local code before changing it.</span>
         </div>
-        <div class="save-row">
-          <button class="btn-save" id="iorelay-save-btn" disabled onclick="trySave('iorelay')">
-            <span class="spinner"></span><span>Save</span>
-          </button>
+        </div>
+      </div>
+
+      <div class="section-card collapsed" id="io-expansion-card">
+        <div class="card-head-row accordion-toggle" onclick="toggleAccordion('io-expansion-card')">
+          <div class="section-heading">Expansion Boards</div>
+          <div class="accordion-right">
+            <span class="accordion-summary" id="ioexpansion-summary">W2, R2IO Board · Online</span>
+            <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="accordion-body">
+        <div class="section-intro">Up to 4 boards connect automatically over CAN — plug &amp; play, no pairing needed.</div>
+        <div class="io-port-row">
+          <div class="io-port-head">
+            <span class="io-port-name">W2 Board</span>
+            <span class="board-status-pill good">Online</span>
+          </div>
+          <div class="field-helper" style="margin-top:-6px;">SN WB2-0021-7743 — adds 2 Wiegand ports (D0/D1, LED, BUZ each). Locks Wiegand on this unit's onboard Data Port and claims I/O 1–4 for REX/DPS — see I/O Port Assignment on the Data Port tab.</div>
+        </div>
+        <div class="io-port-row">
+          <div class="io-port-head">
+            <span class="io-port-name">R2IO Board</span>
+            <span class="board-status-pill good">Online</span>
+          </div>
+          <div class="field-helper" style="margin:-6px 0 12px;">SN RIO-0048-2210 — adds Input 3–4 and Relay 3–4.</div>
+          <div class="subsection-heading">Relay 3</div>
+          <div class="io-port-head" style="margin-bottom:8px;">
+            <span class="field-label" style="margin-bottom:0;">On Power Loss</span>
+            <div class="io-seg" style="width:150px;">
+              <button type="button" class="active" onclick="setBoardRelay(event)">Fail Secure</button>
+              <button type="button" onclick="setBoardRelay(event)">Fail Safe</button>
+            </div>
+          </div>
+          <div class="io-port-head">
+            <span class="field-label" style="margin-bottom:0;">On Radio-Link Loss</span>
+            <div class="io-seg" style="width:150px;">
+              <button type="button" class="active" onclick="setBoardRelay(event)">Fail Secure</button>
+              <button type="button" onclick="setBoardRelay(event)">Fail Safe</button>
+            </div>
+          </div>
+          <div class="subsection-divider"></div>
+          <div class="subsection-heading">Relay 4</div>
+          <div class="io-port-head" style="margin-bottom:8px;">
+            <span class="field-label" style="margin-bottom:0;">On Power Loss</span>
+            <div class="io-seg" style="width:150px;">
+              <button type="button" onclick="setBoardRelay(event)">Fail Secure</button>
+              <button type="button" class="active" onclick="setBoardRelay(event)">Fail Safe</button>
+            </div>
+          </div>
+          <div class="io-port-head">
+            <span class="field-label" style="margin-bottom:0;">On Radio-Link Loss</span>
+            <div class="io-seg" style="width:150px;">
+              <button type="button" onclick="setBoardRelay(event)">Fail Secure</button>
+              <button type="button" class="active" onclick="setBoardRelay(event)">Fail Safe</button>
+            </div>
+          </div>
+        </div>
+        <div class="field-helper" style="margin-top:10px;">Max 32 relays total per device, onboard and expansion combined.</div>
+        </div>
+      </div>
+
+      <div class="section-card collapsed" id="io-alarmout-card">
+        <div class="card-head-row accordion-toggle" onclick="toggleAccordion('io-alarmout-card')">
+          <div class="section-heading">Alarm Output</div>
+          <div class="accordion-right">
+            <span class="accordion-summary" id="ioalarmout-summary"></span>
+            <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="accordion-body">
+        <div class="section-intro">Central Unit only. Routes an alarm signal into your access-control panel using any I/O port or relay that isn't already assigned elsewhere.</div>
+        <div class="field-group" style="margin-bottom:0;">
+          <label class="field-label">Source</label>
+          <select class="field-select-full" onchange="markDirty('alarmout')">
+            <option selected>None</option>
+            <option>I/O 1</option>
+            <option>I/O 2</option>
+            <option>I/O 3</option>
+            <option>I/O 4</option>
+            <option>Relay 1</option>
+            <option>Relay 2</option>
+            <option>Relay 3 (R2IO)</option>
+            <option>Relay 4 (R2IO)</option>
+          </select>
+          <div class="field-helper">Only ports and relays not already in use elsewhere are selectable.</div>
+        </div>
         </div>
       </div>
     </div>
@@ -435,11 +547,6 @@
           <label class="field-label">DNS</label>
           <input class="field-input" id="dns" value="192.168.1.1" disabled oninput="validateIp('dns')">
           <div class="field-error" id="dns-error">Enter a valid IP address (e.g. 192.168.1.1)</div>
-        </div>
-        <div class="save-row">
-          <button class="btn-save" id="conn-save-btn" disabled onclick="trySave('conn')">
-            <span class="spinner"></span><span>Save</span>
-          </button>
         </div>
       </div>
     </div>
@@ -491,10 +598,17 @@
   </div>
 
   <div class="bottom-nav">
+    <a class="nav-item" href="home.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/></svg></span><span class="nav-label">Home</span></a>
     <a class="nav-item" href="system-info.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 11h1v6h1"/></svg></span><span class="nav-label">System Info</span></a>
     <a class="nav-item" href="monitoring.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h3.5l1.8-6 3 11 2.2-8.5 1.5 3.5H21"/></svg></span><span class="nav-label">Monitoring</span></a>
     <a class="nav-item active" href="settings.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span><span class="nav-label">Settings</span></a>
     <a class="nav-item" href="device.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 2v4M16 2v4M4 10h16"/></svg></span><span class="nav-label">Device</span></a>
+  </div>
+  <div class="save-all-bar" id="save-all-bar">
+    <span class="save-all-text">Unsaved changes</span>
+    <button class="btn-save" id="save-all-btn" disabled onclick="trySaveAll()">
+      <span class="spinner"></span><span>Save All</span>
+    </button>
   </div>
   <div id="toast" class="toast"></div>
 </div>
@@ -502,10 +616,80 @@
 <script>
 const state = {
   role: 'gate',
-  dirty: { radio:false, relay:false, reader:false, io:false, iorelay:false, conn:false },
+  dataPortMode: 'osdp',
+  hasW2Board: true,
+  dirty: { radio:false, reader:false, io:false, iorelay:false, alarmout:false, boardrelay:false, conn:false },
   failNext: false,
   outcome: 'found',
+  activeTab: 'role',
 };
+const TAB_DIRTY_KEYS = { role: ['radio'], dataport: ['reader'], io: ['io','iorelay','boardrelay','alarmout'], network: ['conn'] };
+const W2_MAP = {
+  gate: [['REX 1','Output'],['DPS 1','Output'],['REX 2','Output'],['DPS 2','Output']],
+  edge: [['REX 1','Input'],['DPS 1','Input'],['REX 2','Input'],['DPS 2','Input']],
+};
+
+/* Data Port mode determines the radio module's underlying operating mode (FSK for OSDP, LoRa for
+   Wiegand/RS485) and auto-assigns I/O 1-4 to fixed reader-interface roles. Only RS485 mode leaves
+   I/O 1-4 free for the installer to assign on the I/O Ports tab. */
+const IO_MAP = {
+  osdp: {
+    gate: [['REX 1','Output'],['DPS 1','Output'],['REX 2','Output'],['DPS 2','Output']],
+    edge: [['REX 1','Input'],['DPS 1','Input'],['REX 2','Input'],['DPS 2','Input']],
+  },
+  wiegand: {
+    gate: [['REX','Output'],['DPS','Output'],['LED','Input'],['BUZ','Input']],
+    edge: [['REX','Input'],['DPS','Input'],['LED','Output'],['BUZ','Output']],
+  },
+};
+const TERM_NOTE = {
+  wiegand: 'Be sure to disable the 120Ω termination resistor under the connector.',
+  osdp: 'If the RS485 connection is unreliable, you can enable the 120Ω termination resistor with the switch under the connector.',
+  rs485: 'If the RS485 connection is unreliable, you can enable the 120Ω termination resistor with the switch under the connector.',
+};
+
+function renderIOMap(){
+  const introEl = document.getElementById('iomap-intro');
+  const rowsEl = document.getElementById('iomap-rows');
+  document.getElementById('rs485-io-note').textContent = state.hasW2Board
+    ? 'Raw RS485 passthrough — no Wiegand or OSDP reader protocol. I/O 1–4 are still claimed by the W2 Expansion Board (see I/O Port Assignment above), not freed up by RS485 mode.'
+    : 'Raw RS485 passthrough — no Wiegand or OSDP reader protocol. I/O 1–4 default to a fixed direction (reassignable on the I/O Ports tab) instead of a reader function.';
+  if(state.hasW2Board){
+    introEl.textContent = 'Locked by the W2 Expansion Board — it claims I/O 1–4 for its 2 Wiegand doors\' REX/DPS signals regardless of this unit\'s Data Port mode.';
+    rowsEl.innerHTML = W2_MAP[state.role].map((pair, i) =>
+      `<div class="iomap-row"><span class="iomap-port">I/O ${i+1}</span><span class="iomap-value">${pair[0]} · ${pair[1]}</span></div>`
+    ).join('');
+    return;
+  }
+  const mode = state.dataPortMode;
+  if(mode === 'rs485'){
+    introEl.textContent = 'RS485 mode has no reader function on I/O 1–4 — each defaults to ' + (state.role==='gate' ? 'Input' : 'Output') + ' and is fully reassignable on the I/O Ports tab.';
+    rowsEl.innerHTML = '';
+  } else {
+    introEl.textContent = 'Fixed by this Data Port mode — not reassignable. Switch to RS485 to assign I/O 1–4 manually on the I/O Ports tab.';
+    rowsEl.innerHTML = IO_MAP[mode][state.role].map((pair, i) =>
+      `<div class="iomap-row"><span class="iomap-port">I/O ${i+1}</span><span class="iomap-value">${pair[0]} · ${pair[1]}</span></div>`
+    ).join('');
+  }
+}
+
+function renderIOPorts(){
+  const defaultDir = state.role === 'gate' ? 'input' : 'output'; // RS485 mode default: Central all Input, Remote all Output
+  const locked = state.hasW2Board || state.dataPortMode !== 'rs485';
+  const map = state.hasW2Board ? W2_MAP[state.role] : (locked ? IO_MAP[state.dataPortMode][state.role] : null);
+  for(let i=1;i<=4;i++){
+    const seg = document.getElementById('io'+i+'-seg');
+    const tag = document.getElementById('io'+i+'-locked');
+    seg.style.display = locked ? 'none' : 'flex';
+    tag.style.display = locked ? 'inline-block' : 'none';
+    if(locked){
+      tag.textContent = map[i-1][0] + ' · ' + map[i-1][1];
+    } else {
+      seg.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.textContent.toLowerCase() === defaultDir));
+    }
+  }
+  document.getElementById('io-locked-note').style.display = locked ? 'block' : 'none';
+}
 
 let PAIRED = { id:'cur', name:'WW-EDGE-B01C44', signal:'−58 dBm' };
 
@@ -514,12 +698,15 @@ function showTab(tab, evt){
   document.getElementById('panel-'+tab).classList.add('active');
   document.querySelectorAll('.settings-tabs button').forEach(b=>b.classList.remove('active'));
   evt.currentTarget.classList.add('active');
+  state.activeTab = tab;
+  updateSaveAllBar();
 }
 
 function toast(msg, isError){
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.toggle('error', !!isError);
+  el.classList.toggle('bar-shown', document.getElementById('save-all-bar').classList.contains('show'));
   el.classList.add('show');
   clearTimeout(el._t);
   el._t = setTimeout(()=>el.classList.remove('show'), 2600);
@@ -527,37 +714,56 @@ function toast(msg, isError){
 
 function markDirty(card){
   state.dirty[card] = true;
-  updateSaveState(card);
+  updateSaveAllBar();
+  if(card === 'iorelay') updateRelaySummary();
+  if(card === 'alarmout') updateAlarmSummary();
 }
-function updateSaveState(card){
-  const btn = document.getElementById(card+'-save-btn');
-  if(!btn) return;
-  let valid = true;
+function toggleAccordion(cardId){
+  document.getElementById(cardId).classList.toggle('collapsed');
+}
+function updateRelaySummary(){
+  const card = document.getElementById('io-relay-card');
+  const timerSel = card.querySelector('.field-select-full');
+  const segs = card.querySelectorAll('.io-port-head .io-seg');
+  const segText = s => s.querySelector('button.active').textContent.replace('Fail ','');
+  document.getElementById('iorelay-summary').textContent =
+    `${timerSel.value} · R1 ${segText(segs[0])}/${segText(segs[1])} · R2 ${segText(segs[2])}/${segText(segs[3])}`;
+}
+function updateAlarmSummary(){
+  const sel = document.querySelector('#io-alarmout-card .field-select-full');
+  document.getElementById('ioalarmout-summary').textContent = 'Source: ' + sel.options[sel.selectedIndex].text;
+}
+function isCardValid(card){
   if(card === 'conn'){
     const mode = document.querySelector('input[name=ipconfig]:checked').value;
     if(mode === 'manual'){
-      ['ip','subnet','gateway','dns'].forEach(f=>{
-        if(!/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(document.getElementById(f).value.trim())) valid = false;
-      });
+      return ['ip','subnet','gateway','dns'].every(f=>/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(document.getElementById(f).value.trim()));
     }
   }
-  btn.disabled = !(state.dirty[card] && valid);
+  return true;
 }
-function trySave(card){
-  updateSaveState(card);
-  const btn = document.getElementById(card+'-save-btn');
-  if(btn.disabled) return;
+function updateSaveAllBar(){
+  const keys = (TAB_DIRTY_KEYS[state.activeTab] || []).filter(k => state.dirty[k]);
+  const bar = document.getElementById('save-all-bar');
+  const btn = document.getElementById('save-all-btn');
+  bar.classList.toggle('show', keys.length > 0);
+  btn.disabled = !(keys.length > 0 && keys.every(isCardValid));
+}
+function trySaveAll(){
+  const keys = (TAB_DIRTY_KEYS[state.activeTab] || []).filter(k => state.dirty[k]);
+  if(!keys.length || !keys.every(isCardValid)) return;
+  const btn = document.getElementById('save-all-btn');
   btn.classList.add('loading');
   btn.disabled = true;
   setTimeout(()=>{
     btn.classList.remove('loading');
     if(state.failNext){
+      updateSaveAllBar();
       toast("Couldn't save — check your connection and try again.", true);
-      btn.disabled = false;
     } else {
+      keys.forEach(k => state.dirty[k] = false);
+      updateSaveAllBar();
       toast('Saved');
-      state.dirty[card] = false;
-      btn.disabled = true;
     }
   }, 900);
 }
@@ -567,31 +773,38 @@ function toggleFail(evt){
   evt.target.classList.toggle('current', state.failNext);
 }
 
-/* ---- Role switch (Radio/gate ↔ Relay Failsafe/edge) ---- */
+/* ---- Role switch ---- */
 function setRole(role, evt){
   state.role = role;
   document.getElementById('role-badge').textContent = role === 'gate' ? 'Central Unit' : 'Remote Unit';
   document.getElementById('role-gate-content').style.display = role === 'gate' ? '' : 'none';
-  document.getElementById('role-edge-content').style.display = role === 'edge' ? '' : 'none';
-  document.getElementById('tab-role-btn').textContent = role === 'gate' ? 'Radio' : 'Relay Failsafe';
+  document.getElementById('io-alarmout-card').style.display = role === 'gate' ? '' : 'none';
   evt.target.parentElement.querySelectorAll('.dev-btn').forEach(b=>b.classList.remove('current'));
   evt.target.classList.add('current');
+  renderIOMap();
+  renderIOPorts();
 }
 
-/* ---- Relay Failsafe ---- */
+/* ---- Relay Failsafe (I/O Ports tab) ---- */
 function setRelay(evt){
   const btn = evt.currentTarget;
-  btn.closest('.seg-2col').querySelectorAll('.seg-btn-2line').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  markDirty('relay');
-}
-
-/* ---- I/O Ports: Relay State on RF Link Lost ---- */
-function setRelayRf(evt){
-  const btn = evt.currentTarget;
-  btn.closest('.seg-2col').querySelectorAll('.seg-btn-2line').forEach(b=>b.classList.remove('active'));
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   markDirty('iorelay');
+}
+function setRelayRf(evt){
+  const btn = evt.currentTarget;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  markDirty('iorelay');
+}
+
+/* ---- Expansion Boards ---- */
+function setBoardRelay(evt){
+  const btn = evt.currentTarget;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  markDirty('boardrelay');
 }
 
 /* ---- Paired Remote Unit ---- */
@@ -617,6 +830,11 @@ function renderEdges(){
   }
 }
 renderEdges();
+document.getElementById('dataport-term-note').textContent = TERM_NOTE[state.dataPortMode];
+renderIOMap();
+renderIOPorts();
+updateRelaySummary();
+updateAlarmSummary();
 
 function setPairedDemo(paired, evt){
   PAIRED = paired ? { id:'cur', name:'WW-EDGE-B01C44', signal:'−58 dBm' } : null;
@@ -673,18 +891,28 @@ function confirmPair(){
   toast('Remote Unit paired');
 }
 
+/* ---- Remote Unit Configuration (staging for a new Remote Unit's setup wizard) ---- */
+function stageRemoteConfig(){
+  document.getElementById('stage-config-status').textContent = 'Configuration staged — ready to apply from a new Remote Unit’s Setup Wizard.';
+  toast('Remote Unit configuration staged');
+}
+
 /* ---- Data Port ---- */
 function setPortMode(mode, evt){
+  state.dataPortMode = mode;
   document.getElementById('wiegand-fields').classList.toggle('active', mode==='wiegand');
   document.getElementById('osdp-fields').classList.toggle('active', mode==='osdp');
+  document.getElementById('rs485-fields').classList.toggle('active', mode==='rs485');
+  document.getElementById('dataport-term-note').textContent = TERM_NOTE[mode];
   evt.currentTarget.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
   evt.currentTarget.classList.add('active');
+  renderIOMap();
+  renderIOPorts();
   markDirty('reader');
 }
 function setManualTiming(on){
   document.getElementById('reader-type').disabled = on;
-  document.getElementById('pulse').disabled = !on;
-  document.getElementById('interpulse').disabled = !on;
+  document.getElementById('manual-timing-fields').classList.toggle('show', on);
   markDirty('reader');
 }
 
@@ -693,7 +921,6 @@ function setIOFunction(port, func, evt){
   const btn = evt.currentTarget;
   btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('io'+port+'-super').style.display = func==='input' ? 'block' : 'none';
   markDirty('io');
 }
 
@@ -715,6 +942,11 @@ function validateIp(field){
   markDirty('conn');
 }
 
+/* Deep-link from Home: settings.html#dataport selects the Data Port tab on load, etc. */
+(function(){
+  const btn = document.getElementById('tab-' + location.hash.slice(1) + '-btn');
+  if(btn) btn.click();
+})();
 </script>
 </body>
 </html>

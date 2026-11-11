@@ -12,13 +12,13 @@
     --color-surface: #FFFFFF;
     --color-border: #E7E9EC;
     --color-text: #1B2430;
-    --color-text-muted: rgba(27, 36, 48, 0.56);
-    --color-text-faint: rgba(27, 36, 48, 0.38);
+    --color-text-muted: rgba(27, 36, 48, 0.68);
+    --color-text-faint: rgba(27, 36, 48, 0.65);
     --color-primary: #1B2430;
     --color-primary-hover: #0F151D;
     --color-accent: #3E7BFA;
-    --color-danger: #E5484D;
-    --color-success: #2FB344;
+    --color-danger: #D34247;
+    --color-success: #2BA23E;
     --color-danger-bg: #FDECEC;
     --color-success-bg: #E9F8EC;
     --color-accent-bg: #EAF1FF;
@@ -63,7 +63,7 @@
   /* ---------- Shell header: role badge + connection ---------- */
   .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
   .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
-  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1C7F2C; }
   .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
   .shell-header-right { display: flex; align-items: center; gap: 10px; }
   .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
@@ -95,7 +95,7 @@
   .dot-indicator.bad { background: var(--color-danger); }
   .dot-indicator.neutral { background: var(--color-text-faint); }
   .status-word { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; }
-  .status-word.good { color: #1E8A30; background: var(--color-success-bg); }
+  .status-word.good { color: #1C7F2C; background: var(--color-success-bg); }
   .status-word.warn { color: #9A5A12; background: #FBEFDD; }
   .status-word.bad { color: #C23237; background: var(--color-danger-bg); }
   .status-word.neutral { color: var(--color-text-faint); background: #EEF0F2; }
@@ -153,7 +153,7 @@
   }
   .nav-icon {
     display: flex; align-items: center; justify-content: center;
-    width: 52px; height: 28px; border-radius: var(--radius-pill);
+    width: 44px; height: 28px; border-radius: var(--radius-pill);
     background: transparent; transition: background-color 0.25s cubic-bezier(.4,0,.2,1), color 0.2s ease;
     color: inherit;
   }
@@ -219,6 +219,9 @@
         <div class="info-row"><span class="info-label">Firmware Version</span><span class="info-value">2.4.1</span></div>
         <div class="info-row"><span class="info-label">Hardware Version</span><span class="info-value">Rev C</span></div>
         <div class="info-row"><span class="info-label">API Version</span><span class="info-value">1.0.0</span></div>
+        <div class="section-heading">Expansion Boards</div>
+        <div class="info-row"><span class="info-label">W2 Board</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="info-value">WB2-0021-7743</span><span class="status-word good">Online</span></span></div>
+        <div class="info-row"><span class="info-label">R2IO Board</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="info-value">RIO-0048-2210</span><span class="status-word good">Online</span></span></div>
         <div id="b-network-block">
           <div class="section-heading">Network</div>
           <div class="info-row"><span class="info-label">Connection</span><span class="info-value">Ethernet</span></div>
@@ -273,6 +276,10 @@
 
 <template id="tpl-nav">
   <div class="bottom-nav">
+    <a class="nav-item" href="home.html" style="text-decoration:none;">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/></svg></span>
+      <span class="nav-label">Home</span>
+    </a>
     <a class="nav-item active" href="system-info.html" style="text-decoration:none;">
       <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 11h1v6h1"/></svg></span>
       <span class="nav-label">System Info</span>

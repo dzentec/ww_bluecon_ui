@@ -8,9 +8,9 @@
 <style>
   :root {
     --color-bg: #F4F5F7; --color-surface: #FFFFFF; --color-border: #E7E9EC;
-    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.56); --color-text-faint: rgba(27, 36, 48, 0.38);
+    --color-text: #1B2430; --color-text-muted: rgba(27, 36, 48, 0.68); --color-text-faint: rgba(27, 36, 48, 0.65);
     --color-primary: #1B2430; --color-primary-hover: #0F151D; --color-accent: #3E7BFA;
-    --color-danger: #E5484D; --color-success: #2FB344;
+    --color-danger: #D34247; --color-success: #2BA23E;
     --color-danger-bg: #FDECEC; --color-success-bg: #E9F8EC; --color-accent-bg: #EAF1FF;
     --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
     --text-heading: 20px; --text-body: 15px; --text-label: 13px;
@@ -33,7 +33,7 @@
 
   .shell-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; flex-shrink: 0; }
   .role-badge { background: var(--color-primary); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius-pill); }
-  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1E8A30; }
+  .conn-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #1C7F2C; }
   .conn-status .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); flex-shrink: 0; }
   .shell-header-right { display: flex; align-items: center; gap: 10px; }
   .exit-device-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: var(--color-text-muted); text-decoration: none; flex-shrink: 0; }
@@ -54,7 +54,14 @@
   .info-value { font-size: var(--text-body); font-weight: 500; color: var(--color-text); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 62%; }
   .info-value-indicator { display: flex; align-items: center; gap: 7px; justify-content: flex-end; }
   .info-value-indicator .info-value { max-width: none; }
+  .info-value-muted { font-size: var(--text-body); color: var(--color-text-faint); cursor: help; }
   .io-mode-tag { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: var(--color-text-faint); background: #EEF0F2; padding: 2px 7px; border-radius: var(--radius-pill); margin-left: 7px; }
+  .expansion-board-head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 8px 0; border-top: 1px solid var(--color-border); }
+  .expansion-board-head:first-of-type { border-top: none; }
+  .expansion-board-chevron { transition: transform 0.2s ease; color: var(--color-text-faint); flex-shrink: 0; margin-left: 6px; }
+  .expansion-board-chevron.open { transform: rotate(90deg); }
+  .board-ports { padding: 0 0 4px; }
+  .board-ports .info-row { padding-left: 14px; }
 
   .dot-indicator { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .dot-indicator.good { background: var(--color-success); }
@@ -62,7 +69,7 @@
   .dot-indicator.bad { background: var(--color-danger); }
   .dot-indicator.neutral { background: var(--color-text-faint); }
   .status-word { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill); white-space: nowrap; }
-  .status-word.good { color: #1E8A30; background: var(--color-success-bg); }
+  .status-word.good { color: #1C7F2C; background: var(--color-success-bg); }
   .status-word.warn { color: #9A5A12; background: #FBEFDD; }
   .status-word.bad { color: #C23237; background: var(--color-danger-bg); }
   .status-word.neutral { color: var(--color-text-faint); background: #EEF0F2; }
@@ -141,7 +148,7 @@
 
   .bottom-nav { display: flex; position: absolute; left: 20px; right: 20px; bottom: 18px; z-index: 20; background: rgba(255, 255, 255, 0.68); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); border-radius: 26px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 12px 32px rgba(27, 36, 48, 0.18), 0 2px 8px rgba(27, 36, 48, 0.08); padding: 7px 4px; }
   .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; color: var(--color-text-faint); cursor: pointer; background: none; border: none; font-family: var(--font-sans); min-width: 0; }
-  .nav-icon { display: flex; align-items: center; justify-content: center; width: 50px; height: 28px; border-radius: var(--radius-pill); background: transparent; transition: background-color 0.25s cubic-bezier(.4,0,.2,1), color 0.2s ease; color: inherit; }
+  .nav-icon { display: flex; align-items: center; justify-content: center; width: 44px; height: 28px; border-radius: var(--radius-pill); background: transparent; transition: background-color 0.25s cubic-bezier(.4,0,.2,1), color 0.2s ease; color: inherit; }
   .nav-item.active .nav-icon { background: rgba(27, 36, 48, 0.1); }
   .nav-item.active { color: var(--color-primary); }
   .nav-label { font-size: 9.5px; font-weight: 500; white-space: nowrap; }
@@ -178,9 +185,9 @@
     <div class="screen-title">Monitoring</div>
     <div class="content">
       <div class="settings-tabs">
-        <button class="active" onclick="showMonTab('b','signal',event)">Signal</button>
-        <button onclick="showMonTab('b','io',event)">I/O &amp; Relays</button>
-        <button onclick="showMonTab('b','rfid',event)">RFID &amp; Power</button>
+        <button class="active" id="tab-signal-btn" onclick="showMonTab('b','signal',event)">Signal</button>
+        <button id="tab-io-btn" onclick="showMonTab('b','io',event)">I/O &amp; Relays</button>
+        <button id="tab-rfid-btn" onclick="showMonTab('b','rfid',event)">RFID &amp; Power</button>
       </div>
 
       <div class="settings-tab-panel active" id="b-signal-panel">
@@ -231,14 +238,53 @@
       <div class="settings-tab-panel" id="b-io-panel">
         <div class="section-card">
           <div class="section-heading">I/O &amp; Relays</div>
-          <div class="info-row"><span class="info-label">I/O 1<span class="io-mode-tag">Input</span></span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Idle</span></span></div>
-          <div class="info-row"><span class="info-label">I/O 2<span class="io-mode-tag">Input</span></span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Active</span></span></div>
-          <div class="info-row"><span class="info-label">I/O 3<span class="io-mode-tag">Output</span></span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Off</span></span></div>
-          <div class="info-row"><span class="info-label">I/O 4<span class="io-mode-tag">Output</span></span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">On</span></span></div>
+          <div class="info-row"><span class="info-label">I/O 1<span class="io-mode-tag">Input</span></span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Normal</span></span></div>
+          <div class="info-row"><span class="info-label">I/O 2<span class="io-mode-tag">Input</span></span><span class="info-value-indicator"><span class="dot-indicator bad"></span><span class="status-word bad">Alarm</span></span></div>
+          <div class="info-row"><span class="info-label">I/O 3<span class="io-mode-tag">Output</span></span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Inactive</span></span></div>
+          <div class="info-row"><span class="info-label">I/O 4<span class="io-mode-tag">Output</span></span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Active</span></span></div>
           <div class="info-row"><span class="info-label">Relay R1</span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Off</span></span></div>
           <div class="info-row"><span class="info-label">Relay R2</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">On</span></span></div>
           <div class="info-row"><span class="info-label">Input IN1</span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Idle</span></span></div>
           <div class="info-row"><span class="info-label">Input IN2</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Active</span></span></div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-heading">Expansion Boards</div>
+          <div class="expansion-board-head" onclick="toggleBoardPorts('b-w2', event)">
+            <span class="info-label">W2 Board<span class="io-mode-tag">SN WB2-0021-7743</span></span>
+            <span class="info-value-indicator">
+              <span class="dot-indicator good"></span><span class="status-word good">Online</span>
+              <svg class="expansion-board-chevron" id="b-w2-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+            </span>
+          </div>
+          <div class="board-ports" id="b-w2-ports" style="display:none;">
+            <div class="info-row"><span class="info-label">Reader 1 · D0<span class="io-mode-tag">Output</span></span><span class="info-value-muted" title="Digital data line — no persistent state to display">—</span></div>
+            <div class="info-row"><span class="info-label">Reader 1 · D1<span class="io-mode-tag">Output</span></span><span class="info-value-muted" title="Digital data line — no persistent state to display">—</span></div>
+            <div class="info-row"><span class="info-label">Reader 1 · LED<span class="io-mode-tag">Input</span></span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Inactive</span></span></div>
+            <div class="info-row"><span class="info-label">Reader 1 · BUZ<span class="io-mode-tag">Input</span></span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Inactive</span></span></div>
+            <div class="info-row"><span class="info-label">Reader 2 · D0<span class="io-mode-tag">Output</span></span><span class="info-value-muted" title="Digital data line — no persistent state to display">—</span></div>
+            <div class="info-row"><span class="info-label">Reader 2 · D1<span class="io-mode-tag">Output</span></span><span class="info-value-muted" title="Digital data line — no persistent state to display">—</span></div>
+            <div class="info-row"><span class="info-label">Reader 2 · LED<span class="io-mode-tag">Input</span></span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Inactive</span></span></div>
+            <div class="info-row"><span class="info-label">Reader 2 · BUZ<span class="io-mode-tag">Input</span></span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Inactive</span></span></div>
+          </div>
+          <div class="expansion-board-head" onclick="toggleBoardPorts('b-r2io', event)">
+            <span class="info-label">R2IO Board<span class="io-mode-tag">SN RIO-0048-2210</span></span>
+            <span class="info-value-indicator">
+              <span class="dot-indicator good"></span><span class="status-word good">Online</span>
+              <svg class="expansion-board-chevron" id="b-r2io-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+            </span>
+          </div>
+          <div class="board-ports" id="b-r2io-ports" style="display:none;">
+            <div class="info-row"><span class="info-label">Input 3</span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Idle</span></span></div>
+            <div class="info-row"><span class="info-label">Input 4</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Active</span></span></div>
+            <div class="info-row"><span class="info-label">Relay 3</span><span class="info-value-indicator"><span class="dot-indicator neutral"></span><span class="status-word neutral">Off</span></span></div>
+            <div class="info-row"><span class="info-label">Relay 4</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">On</span></span></div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-heading">Tamper</div>
+          <div class="info-row"><span class="info-label">Tamper 0<span class="io-mode-tag">DIN Rail</span></span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Closed</span></span></div>
+          <div class="info-row"><span class="info-label">Tamper 1<span class="io-mode-tag">External</span></span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Closed</span></span></div>
         </div>
       </div>
 
@@ -267,11 +313,6 @@
           <div class="info-row"><span class="info-label">Errors</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">0</span></span></div>
           <div class="info-row"><span class="info-label">Packages In</span><span class="info-value">570</span></div>
           <div class="info-row"><span class="info-label">Packages Out</span><span class="info-value">3350</span></div>
-        </div>
-        <div class="section-card">
-          <div class="section-heading">Battery &amp; Tamper</div>
-          <div class="info-row"><span class="info-label">Battery Backup</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Charged</span></span></div>
-          <div class="info-row"><span class="info-label">Tamper</span><span class="info-value-indicator"><span class="dot-indicator good"></span><span class="status-word good">Closed</span></span></div>
         </div>
         <div class="section-card">
           <div class="card-head-row">
@@ -324,6 +365,7 @@
     </div>
 
     <div class="bottom-nav">
+      <a class="nav-item" href="home.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/></svg></span><span class="nav-label">Home</span></a>
       <a class="nav-item" href="system-info.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 11h1v6h1"/></svg></span><span class="nav-label">System Info</span></a>
       <a class="nav-item active" href="monitoring.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h3.5l1.8-6 3 11 2.2-8.5 1.5 3.5H21"/></svg></span><span class="nav-label">Monitoring</span></a>
       <a class="nav-item" href="settings.html" style="text-decoration:none;"><span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span><span class="nav-label">Settings</span></a>
@@ -347,6 +389,15 @@
     t.classList.add('show');
     clearTimeout(t._timer);
     t._timer = setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+
+  function toggleBoardPorts(id, evt){
+    evt.currentTarget.blur();
+    const ports = document.getElementById(id+'-ports');
+    const chevron = document.getElementById(id+'-chevron');
+    const open = ports.style.display === 'none';
+    ports.style.display = open ? 'block' : 'none';
+    chevron.classList.toggle('open', open);
   }
 
   function downloadFullLog(){
@@ -475,6 +526,12 @@
 
   drawChart('b','10m');
   drawFaultChart();
+
+  /* Deep-link from Home: monitoring.html#io selects the I/O & Relays tab on load, etc. */
+  (function(){
+    const btn = document.getElementById('tab-' + location.hash.slice(1) + '-btn');
+    if(btn) btn.click();
+  })();
 </script>
 </body>
 </html>
