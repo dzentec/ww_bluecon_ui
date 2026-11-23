@@ -223,7 +223,6 @@
           <div class="confirm-reveal-inner">
             <div class="confirm-reveal-text">The device will be unreachable for about 30 seconds while it restarts. No settings are changed.</div>
             <div class="confirm-reveal-actions">
-              <button class="btn-confirm-cancel" onclick="closeRestart()">Cancel</button>
               <button class="btn-confirm-go-neutral" onclick="doRestart()">Restart</button>
             </div>
           </div>
@@ -241,7 +240,6 @@
           <div class="confirm-reveal-inner danger">
             <div class="confirm-reveal-text">This erases <strong>all</strong> settings — network, radio, security, pairing — and returns the device to its out-of-box state. This cannot be undone.</div>
             <div class="confirm-reveal-actions">
-              <button class="btn-confirm-cancel" onclick="closeReset()">Cancel</button>
               <button class="btn-confirm-go" onclick="doReset()">Factory Reset</button>
             </div>
           </div>
@@ -297,7 +295,6 @@
           <div class="confirm-reveal-inner danger">
             <div class="confirm-reveal-text">Change this device's login now? Make sure you'll remember the new password — there's no recovery without a factory reset.</div>
             <div class="confirm-reveal-actions">
-              <button class="btn-confirm-cancel" onclick="closeSecConfirm()">Cancel</button>
               <button class="btn-confirm-go" onclick="trySaveSec()">Change Login</button>
             </div>
           </div>
