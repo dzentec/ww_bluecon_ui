@@ -49,10 +49,8 @@
   .board-slot-empty .slot-dot { position:absolute; top:12px; right:14px; width:8px; height:8px; border-radius:50%; border:1px solid var(--color-border-strong); }
 
   .io-port-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-3); }
-  .io-seg { display:flex; background:var(--color-fill); border-radius:var(--radius-md); padding:var(--space-1); width:192px; height:40px; flex-shrink:0; }
+  .io-seg { width:192px; flex-shrink:0; }
   .io-seg.locked { opacity:0.5; pointer-events:none; }
-  .io-seg button { flex:1; appearance:none; border:none; background:transparent; color:var(--color-text-muted); font-size:var(--text-md); font-weight:600; padding:0 2px; border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s ease; }
-  .io-seg button.active { background:var(--color-surface); color:var(--color-primary); box-shadow:var(--shadow-sm); }
 
   .switch { position:relative; width:42px; height:25px; flex-shrink:0; display:inline-block; }
   .switch input { opacity:0; width:0; height:0; position:absolute; }

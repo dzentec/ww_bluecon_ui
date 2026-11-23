@@ -26,7 +26,7 @@
   /* ── Brand (4) ────────────────────────────────────────────── */
   --color-primary: #1B2430;       /* primary buttons, active nav, role badge */
   --color-on-primary: #FFFFFF;    /* text/icons on any solid color */
-  --color-accent: #3E7BFA;        /* links, info, selection */
+  --color-accent: #2A5FD4;        /* links, info, selection (5.7:1 on surface, WCAG AA) */
   --color-accent-bg: #EAF1FF;
 
   /* ── Status (9): solid · tinted background · readable text ── */
@@ -157,6 +157,14 @@
     --chrome-shadow: rgba(0, 0, 0, 0.6);
   }
 }
+
+/* ── Segmented control — ONE look for every switch (distance, relay fail state,
+   tabs, chart timeframe). Pages add only layout (margin / width), never metrics. ── */
+.mode-segmented, .settings-tabs, .chart-timeframe, .dist-segmented, .io-seg { display: flex; background: var(--color-fill); border-radius: var(--radius-md); padding: var(--space-1); }
+.mode-segmented button, .settings-tabs button, .chart-timeframe button, .dist-segmented button, .io-seg button { flex: 1; appearance: none; border: none; background: transparent; color: var(--color-text-muted); font: 600 var(--text-sm)/1.15 var(--font-sans); padding: var(--space-2) var(--space-1); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease; }
+.mode-segmented button.active, .settings-tabs button.active, .chart-timeframe button.active, .dist-segmented button.active, .io-seg button.active { background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-xs); }
+.mode-segmented button:disabled, .settings-tabs button:disabled, .chart-timeframe button:disabled, .dist-segmented button:disabled, .io-seg button:disabled { color: var(--color-text-muted); cursor: not-allowed; }
+.io-seg.locked { opacity: 0.5; pointer-events: none; }
 
 /* Mockup helper: theme switch (themes/theme.js adds the button). */
 .theme-switch { position: fixed; top: 10px; right: 10px; z-index: 10000; display: flex; gap: 2px; padding: 3px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); }
