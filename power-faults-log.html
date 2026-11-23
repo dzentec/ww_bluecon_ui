@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — Power Faults Log</title>
+<link rel="stylesheet" href="themes/default.css">
+<script src="themes/theme.js"></script>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:var(--font-sans); background:var(--chrome-stage); color:var(--color-text); padding:var(--space-12) var(--space-4) var(--space-12); }
+  button { font-family:var(--font-sans); }
+
+  .phone { width:375px; margin:0 auto; background:var(--color-bg); border-radius:var(--chrome-radius); box-shadow:0 30px 60px var(--chrome-shadow), 0 0 0 10px var(--chrome-frame), 0 0 0 11px var(--chrome-edge); overflow:hidden; height:760px; display:flex; flex-direction:column; position:relative; }
+  .status-ios { height:28px; display:flex; align-items:center; justify-content:space-between; padding:0 var(--space-6); font-size:var(--text-sm); font-weight:600; color:var(--color-text); flex-shrink:0; }
+
+  .shell-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-3) var(--space-4) var(--space-2); flex-shrink:0; }
+  .role-badge { background:var(--color-primary); color:var(--color-on-primary); font-size:var(--text-sm); font-weight:600; padding:var(--space-1) var(--space-3); border-radius:var(--radius-pill); }
+  .conn-status { display:flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); font-weight:500; color:var(--color-success-text); }
+  .conn-status .status-dot { width:7px; height:7px; border-radius:50%; background:var(--color-success); flex-shrink:0; }
+  .shell-header-right { display:flex; align-items:center; gap:var(--space-3); }
+  .exit-device-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; color:var(--color-text-muted); text-decoration:none; flex-shrink:0; }
+  .exit-device-btn:hover { background:var(--color-fill); color:var(--color-text); }
+
+  .screen-title-row { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4) var(--space-3); flex-shrink:0; }
+  .back-btn { appearance:none; border:none; background:none; color:var(--color-text); cursor:pointer; padding:2px; display:flex; flex-shrink:0; }
+  .screen-title-text { font-size:var(--text-xl); font-weight:600; }
+
+  .content { flex:1; overflow-y:auto; padding-bottom:var(--space-12); }
+
+  .section-card { background:var(--color-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); margin:0 var(--space-4) var(--space-4); padding:var(--space-4); }
+  .card-head-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-4); }
+  .section-heading { font-size:var(--text-xs); font-weight:600; letter-spacing:0.02em; color:var(--color-text-muted); margin-bottom:var(--space-4); }
+  .card-head-row .section-heading { margin-bottom:0; }
+  .fault-count-badge { background:var(--color-fill); color:var(--color-text-muted); font-size:var(--text-xs); font-weight:600; padding:var(--space-1) var(--space-3); border-radius:var(--radius-pill); }
+  .fault-summary-row { display:flex; gap:var(--space-2); margin-bottom:var(--space-4); }
+  .fault-stat-chip { flex:1; text-align:center; padding:var(--space-3) var(--space-1); border-radius:var(--radius-md); }
+  .fault-stat-chip.sag { background:var(--color-danger-bg); }
+  .fault-stat-chip.surge { background:var(--color-warning-bg); }
+  .fault-stat-value { font-size:var(--text-xl); font-weight:700; display:block; line-height:1.2; }
+  .fault-stat-chip.sag .fault-stat-value { color:var(--color-danger); }
+  .fault-stat-chip.surge .fault-stat-value { color:var(--color-warning-text); }
+  .fault-stat-label { font-size:var(--text-xs); font-weight:600; text-transform:uppercase; letter-spacing:0.02em; }
+  .fault-stat-chip.sag .fault-stat-label { color:var(--color-danger-text); }
+  .fault-stat-chip.surge .fault-stat-label { color:var(--color-warning-text); }
+  .fault-chart-legend { display:flex; gap:var(--space-4); justify-content:center; margin-bottom:var(--space-3); font-size:var(--text-xs); color:var(--color-text-muted); }
+  .fault-chart-legend span { display:flex; align-items:center; gap:var(--space-1); }
+  .fault-chart-legend i { width:8px; height:8px; border-radius:var(--radius-pill); display:inline-block; }
+  .fault-chart-legend i.sag { background:var(--color-danger); }
+  .fault-chart-legend i.surge { background:var(--color-warning-text); }
+  .fault-chart-wrap { margin-bottom:var(--space-1); }
+  .fault-chart-xlabels { display:flex; justify-content:space-between; margin-top:var(--space-1); padding:0 2px; }
+  .fault-chart-xlabels span { font-size:var(--text-xs); color:var(--color-text-muted); }
+  .fault-recent-heading { font-size:var(--text-xs); font-weight:600; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:0.02em; margin:var(--space-2) 0 var(--space-1); }
+  .fault-row { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) 0; border-top:1px solid var(--color-border); }
+  .fault-row:first-of-type { border-top:none; }
+  .fault-icon { width:34px; height:34px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .fault-icon.sag { background:var(--color-danger-bg); color:var(--color-danger); }
+  .fault-icon.surge { background:var(--color-warning-bg); color:var(--color-warning-text); }
+  .fault-text { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+  .fault-title { font-size:var(--text-sm); font-weight:600; }
+  .fault-time { font-size:var(--text-xs); color:var(--color-text-muted); }
+  .fault-value { font-size:var(--text-sm); font-weight:600; text-align:right; flex-shrink:0; white-space:nowrap; }
+  .fault-value.sag { color:var(--color-danger); }
+  .fault-value.surge { color:var(--color-warning-text); }
+  .fault-footnote { font-size:var(--text-xs); color:var(--color-text-muted); margin-top:var(--space-3); line-height:1.4; }
+  .btn-download-log { width:100%; appearance:none; background:transparent; color:var(--color-accent); border:1.5px solid var(--color-border); font-size:var(--text-sm); font-weight:600; padding:var(--space-3); border-radius:var(--radius-md); cursor:pointer; margin-top:var(--space-4); display:flex; align-items:center; justify-content:center; gap:var(--space-2); }
+  .btn-download-log:hover { border-color:var(--color-accent); }
+  .btn-download-log-sub { font-size:var(--text-xs); color:var(--color-text-muted); text-align:center; margin-top:var(--space-2); line-height:1.4; }
+
+  .toast { position:absolute; left:16px; right:16px; bottom:90px; background:var(--color-primary); color:var(--color-on-primary); padding:var(--space-3) var(--space-4); border-radius:var(--radius-md); font-size:var(--text-sm); font-weight:500; transform:translateY(40px); opacity:0; pointer-events:none; transition:all 0.25s ease; z-index:50; box-shadow:var(--shadow-float); display:flex; align-items:center; gap:var(--space-3); }
+  .toast.show { transform:translateY(0); opacity:1; }
+
+  /* ---------- Floating sibling-screens bar: flip through this tab's icons without going back to Home ---------- */
+  .ww-tabbar-wrap { position:absolute; left:0; right:0; bottom:0; padding:0 0 var(--space-4); z-index:20; pointer-events:none; }
+  .ww-tabbar { margin:0 var(--space-4); background:color-mix(in srgb, var(--color-surface) 86%, transparent); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-radius:var(--radius-lg); box-shadow:var(--shadow-float); display:flex; justify-content:space-between; gap:2px; padding:var(--space-2) var(--space-3); overflow-x:auto; scrollbar-width:none; pointer-events:auto; }
+  .ww-tabbar::-webkit-scrollbar { display:none; }
+  .ww-tabbar-item { flex:0 0 52px; width:52px; min-width:0; display:flex; flex-direction:column; align-items:center; gap:var(--space-1); text-decoration:none; color:var(--color-text-muted); padding:var(--space-1) 1px; border-radius:var(--radius-md); }
+  .ww-tabbar-icon { width:30px; height:30px; border-radius:50%; border:1.3px solid var(--color-accent); color:var(--color-accent); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.15s ease, transform 0.1s ease; }
+  .ww-tabbar-label { font-size:var(--text-xs); font-weight:500; text-align:center; line-height:1.15; width:100%; }
+  .ww-tabbar-item.active .ww-tabbar-icon { background:var(--color-primary); border-color:var(--color-primary); color:var(--color-on-primary); }
+  .ww-tabbar-item.active .ww-tabbar-label { color:var(--color-text); font-weight:700; }
+  .ww-tabbar-item:not(.active):hover .ww-tabbar-icon { background:var(--color-accent-bg); }
+  .ww-tabbar-item:not(.active):active .ww-tabbar-icon { transform:scale(0.92); background:var(--color-accent-bg); }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+  <div class="shell-header">
+    <span class="role-badge">Central Unit</span>
+    <div class="shell-header-right">
+      <span class="conn-status"><span class="status-dot"></span>Connected</span>
+      <a class="exit-device-btn" href="device-scan.html" title="Exit device"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a>
+    </div>
+  </div>
+  <div class="screen-title-row">
+    <button class="back-btn" onclick="window.location.href='home.html'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="screen-title-text">Power Faults Log</span>
+  </div>
+
+  <div class="content">
+    <div class="section-card">
+      <div class="card-head-row">
+        <div class="section-heading">Power Faults</div>
+        <span class="fault-count-badge" id="fault-count-badge">47 in 24h</span>
+      </div>
+      <div class="fault-summary-row">
+        <div class="fault-stat-chip sag"><span class="fault-stat-value" id="fault-sag-count">31</span><span class="fault-stat-label">Sags</span></div>
+        <div class="fault-stat-chip surge"><span class="fault-stat-value" id="fault-surge-count">16</span><span class="fault-stat-label">Surges</span></div>
+      </div>
+      <div class="fault-chart-legend"><span><i class="sag"></i>Sag</span><span><i class="surge"></i>Surge</span></div>
+      <div class="fault-chart-wrap">
+        <svg viewBox="0 0 300 90" width="100%" height="90" id="fault-chart-svg"></svg>
+        <div class="fault-chart-xlabels"><span>24h ago</span><span>18h</span><span>12h</span><span>6h</span><span>now</span></div>
+      </div>
+      <div class="fault-recent-heading">Most Recent</div>
+      <div class="fault-row">
+        <span class="fault-icon sag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v10m0 0-4-4m4 4 4-4M5 19h14"/></svg></span>
+        <span class="fault-text"><span class="fault-title">Power Sag</span><span class="fault-time">Nov 4, 03:12</span></span>
+        <span class="fault-value sag">9.1 VDC</span>
+      </div>
+      <div class="fault-row">
+        <span class="fault-icon surge"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V9m0 0 4 4m-4-4-4 4M5 5h14"/></svg></span>
+        <span class="fault-text"><span class="fault-title">Power Surge</span><span class="fault-time">Nov 4, 01:58</span></span>
+        <span class="fault-value surge">29.3 VDC</span>
+      </div>
+      <div class="fault-row">
+        <span class="fault-icon sag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v10m0 0-4-4m4 4 4-4M5 19h14"/></svg></span>
+        <span class="fault-text"><span class="fault-title">Power Sag</span><span class="fault-time">Nov 3, 22:41</span></span>
+        <span class="fault-value sag">9.4 VDC</span>
+      </div>
+      <div class="fault-row">
+        <span class="fault-icon sag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v10m0 0-4-4m4 4 4-4M5 19h14"/></svg></span>
+        <span class="fault-text"><span class="fault-title">Power Sag</span><span class="fault-time">Nov 3, 19:07</span></span>
+        <span class="fault-value sag">8.9 VDC</span>
+      </div>
+      <div class="fault-row">
+        <span class="fault-icon surge"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V9m0 0 4 4m-4-4-4 4M5 5h14"/></svg></span>
+        <span class="fault-text"><span class="fault-title">Power Surge</span><span class="fault-time">Nov 3, 15:22</span></span>
+        <span class="fault-value surge">28.9 VDC</span>
+      </div>
+      <div class="fault-footnote">Logged when supply drops below 9.6 VDC or rises above 28.8 VDC — the device operates on 12–24 VDC.</div>
+      <button class="btn-download-log" onclick="downloadFullLog()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <span id="download-log-label">Download Full Device Log</span>
+      </button>
+      <div class="btn-download-log-sub">Includes all device events, not just power faults.</div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div class="ww-tabbar-wrap">
+    <div class="ww-tabbar" id="ww-tabbar">
+      <a class="ww-tabbar-item" href="radio-signal-log.html"><span class="ww-tabbar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h3.5l1.8-6 3 11 2.2-8.5 1.5 3.5H21"/></svg></span><span class="ww-tabbar-label">Radio<br>Signal log</span></a>
+      <a class="ww-tabbar-item" href="osdp-wiegand.html"><span class="ww-tabbar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 19a4 4 0 0 0-8 0m11-9h2m-2 4h2"/><circle cx="9" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="2"/></svg></span><span class="ww-tabbar-label">OSDP &amp;<br>Wiegand</span></a>
+      <a class="ww-tabbar-item" href="io-relays-monitoring.html"><span class="ww-tabbar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="18" height="8" rx="4"/><circle cx="16" cy="12" r="2.6"/></svg></span><span class="ww-tabbar-label">I/O &amp;<br>Relays</span></a>
+      <a class="ww-tabbar-item" href="expansion-boards-monitoring.html"><span class="ww-tabbar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M11 9h4a2 2 0 0 0 2-2V3"/><circle cx="9" cy="9" r="2"/><path d="M7 21v-4a2 2 0 0 1 2-2h4"/><circle cx="15" cy="15" r="2"/></svg></span><span class="ww-tabbar-label">Expansion<br>Boards</span></a>
+      <span class="ww-tabbar-item active"><span class="ww-tabbar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></span><span class="ww-tabbar-label">Power<br>Faults log</span></span>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelector('#ww-tabbar .active')?.scrollIntoView({inline:'center', block:'nearest'});
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+function downloadFullLog(){
+  const label = document.getElementById('download-log-label');
+  const original = label.textContent;
+  label.textContent = 'Generating log…';
+  setTimeout(()=>{
+    label.textContent = original;
+    toast('Log downloaded — ww-bluecon-20261113-full.txt');
+  }, 900);
+}
+function drawFaultChart(){
+  const svg = document.getElementById('fault-chart-svg');
+  const n = 24, w = 300, h = 80, gap = 2;
+  const barW = (w / n) - gap;
+  const buckets = [];
+  for(let i=0;i<n;i++){
+    let sag = Math.random() < 0.6 ? Math.floor(Math.random()*3) : 0;
+    let surge = Math.random() < 0.4 ? Math.floor(Math.random()*2) : 0;
+    if(Math.random() < 0.08){ sag += 2; }
+    buckets.push({sag, surge});
+  }
+  const max = Math.max(4, ...buckets.map(b=>b.sag+b.surge));
+  let totalSag = 0, totalSurge = 0, svgHtml = '';
+  buckets.forEach((b,i)=>{
+    totalSag += b.sag; totalSurge += b.surge;
+    const x = i * (w/n) + gap/2;
+    const sagH = (b.sag/max) * h;
+    const surgeH = (b.surge/max) * h;
+    let y = h;
+    if(b.sag > 0){
+      y -= sagH;
+      svgHtml += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${sagH.toFixed(1)}" rx="1.5" style="fill:var(--color-danger)"/>`;
+    }
+    if(b.surge > 0){
+      y -= surgeH;
+      svgHtml += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${surgeH.toFixed(1)}" rx="1.5" style="fill:var(--color-warning-text)"/>`;
+    }
+  });
+  svg.innerHTML = `<line x1="0" y1="${h}" x2="${w}" y2="${h}" style="stroke:var(--color-border)" stroke-width="1"/>` + svgHtml;
+  document.getElementById('fault-sag-count').textContent = totalSag;
+  document.getElementById('fault-surge-count').textContent = totalSurge;
+  document.getElementById('fault-count-badge').textContent = (totalSag+totalSurge) + ' in 24h';
+}
+drawFaultChart();
+</script>
+</body>
+</html>

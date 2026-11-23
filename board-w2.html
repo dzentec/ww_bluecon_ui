@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — W2 Settings</title>
+<link rel="stylesheet" href="themes/default.css">
+<script src="themes/theme.js"></script>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:var(--font-sans); background:var(--chrome-stage); color:var(--color-text); padding:var(--space-12) var(--space-4) var(--space-12); }
+  button { font-family:var(--font-sans); }
+
+  .phone { width:375px; margin:0 auto; background:var(--color-bg); border-radius:var(--chrome-radius); box-shadow:0 30px 60px var(--chrome-shadow), 0 0 0 10px var(--chrome-frame), 0 0 0 11px var(--chrome-edge); overflow:hidden; height:760px; display:flex; flex-direction:column; position:relative; }
+  .status-ios { height:28px; display:flex; align-items:center; justify-content:space-between; padding:0 var(--space-6); font-size:var(--text-sm); font-weight:600; color:var(--color-text); flex-shrink:0; }
+
+  .shell-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-3) var(--space-4) var(--space-2); flex-shrink:0; }
+  .role-badge { background:var(--color-primary); color:var(--color-on-primary); font-size:var(--text-sm); font-weight:600; padding:var(--space-1) var(--space-3); border-radius:var(--radius-pill); }
+  .conn-status { display:flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); font-weight:500; color:var(--color-success-text); }
+  .conn-status .status-dot { width:7px; height:7px; border-radius:50%; background:var(--color-success); flex-shrink:0; }
+  .shell-header-right { display:flex; align-items:center; gap:var(--space-3); }
+  .exit-device-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; color:var(--color-text-muted); text-decoration:none; flex-shrink:0; }
+  .exit-device-btn:hover { background:var(--color-fill); color:var(--color-text); }
+
+  .screen-title-row { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4) var(--space-3); flex-shrink:0; }
+  .back-btn { appearance:none; border:none; background:none; color:var(--color-text); cursor:pointer; padding:2px; display:flex; flex-shrink:0; }
+  .screen-title-text { font-size:var(--text-xl); font-weight:600; }
+
+  .board-meta { margin:0 var(--space-6) var(--space-4); }
+  .board-meta-line { font-size:var(--text-sm); color:var(--color-text-muted); line-height:1.5; }
+
+  .content { flex:1; overflow-y:auto; padding-bottom:var(--space-6); }
+
+  .section-card { background:var(--color-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); margin:0 var(--space-6) var(--space-4); padding:var(--space-4); }
+  .section-title { font-size:var(--text-lg); font-weight:700; color:var(--color-text); margin-bottom:var(--space-2); }
+
+  .field-group { margin-bottom:var(--space-4); }
+  .field-group:last-child { margin-bottom:0; }
+  .field-label { font-size:var(--text-sm); color:var(--color-text-muted); margin-bottom:var(--space-2); display:block; font-weight:500; }
+  .field-input, .field-select-full { width:100%; padding:var(--space-3) var(--space-3); border:1.5px solid var(--color-border); border-radius:var(--radius-md); font-size:var(--text-md); color:var(--color-text); background:var(--color-surface); transition:border-color 0.15s ease; }
+  .field-input:focus, .field-select-full:focus { outline:none; border-color:var(--color-accent); }
+  .field-helper { font-size:var(--text-xs); color:var(--color-text-muted); font-style:italic; margin-top:var(--space-1); line-height:1.4; }
+  .ww-select { position:relative; }
+  .ww-select-native { position:absolute; top:0; left:0; width:1px; height:1px; opacity:0; pointer-events:none; overflow:hidden; }
+  .ww-select-trigger { display:flex; align-items:center; justify-content:space-between; gap:var(--space-2); cursor:pointer; text-align:left; }
+  .ww-select-trigger svg { flex-shrink:0; color:var(--color-text-muted); transition:transform 0.15s ease; }
+  .ww-select.open .ww-select-trigger svg { transform:rotate(180deg); }
+  .ww-select.disabled .ww-select-trigger { opacity:0.5; cursor:not-allowed; }
+  .ww-select-panel { position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--color-surface); border:1.5px solid var(--color-border); border-radius:var(--radius-md); box-shadow:var(--shadow-md); padding:var(--space-2); max-height:212px; overflow-y:auto; z-index:30; display:none; }
+  .ww-select.open .ww-select-panel { display:block; }
+  .ww-select-option { padding:var(--space-3) var(--space-3); border-radius:var(--radius-sm); font-size:var(--text-md); color:var(--color-text); cursor:pointer; }
+  .ww-select-option:hover { background:var(--color-accent-bg); }
+  .ww-select-option.selected { background:var(--color-accent); color:var(--color-on-primary); font-weight:600; }
+
+  .toggle-row { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-4); }
+  .toggle-row .field-text { min-width:0; }
+  .toggle-row .field-label { margin-bottom:var(--space-1); }
+  .switch { position:relative; width:42px; height:25px; flex-shrink:0; display:inline-block; }
+  .switch input { opacity:0; width:0; height:0; position:absolute; }
+  .switch .track { position:absolute; inset:0; background:var(--color-border); border-radius:var(--radius-pill); transition:background 0.2s ease; cursor:pointer; }
+  .switch .thumb { position:absolute; top:3px; left:3px; width:19px; height:19px; background:var(--color-surface); border-radius:50%; transition:transform 0.2s ease; box-shadow:var(--shadow-xs); }
+  .switch input:checked ~ .track { background:var(--color-primary); }
+  .switch input:checked ~ .track .thumb { transform:translateX(17px); }
+  .manual-timing-fields { display:none; margin-top:var(--space-4); }
+  .manual-timing-fields.show { display:block; }
+
+  .btn-save { appearance:none; border:none; background:var(--color-primary); color:var(--color-on-primary); font-size:var(--text-md); font-weight:600; padding:var(--space-3) var(--space-6); border-radius:var(--radius-md); cursor:pointer; transition:all 0.15s ease; display:flex; align-items:center; gap:var(--space-2); }
+  .btn-save:disabled { background:var(--color-border-strong); color:var(--color-on-primary); cursor:not-allowed; }
+  .btn-save .spinner { display:none; width:14px; height:14px; border-radius:50%; border:2px solid color-mix(in srgb, var(--color-on-primary) 35%, transparent); border-top-color:var(--color-on-primary); animation:spin 0.8s linear infinite; }
+  .btn-save.loading .spinner { display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .save-all-bar { position:absolute; left:16px; right:16px; bottom:16px; background:var(--color-surface); border:1.5px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-3) var(--space-3) var(--space-3) var(--space-4); display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); box-shadow:var(--shadow-float); transform:translateY(16px); opacity:0; pointer-events:none; transition:all 0.2s ease; z-index:40; }
+  .save-all-bar.show { transform:translateY(0); opacity:1; pointer-events:auto; }
+  .save-all-text { font-size:var(--text-sm); font-weight:500; color:var(--color-text); }
+  .toast { position:absolute; left:16px; right:16px; bottom:90px; background:var(--color-primary); color:var(--color-on-primary); padding:var(--space-3) var(--space-4); border-radius:var(--radius-md); font-size:var(--text-sm); font-weight:500; transform:translateY(40px); opacity:0; pointer-events:none; transition:all 0.25s ease; z-index:50; box-shadow:var(--shadow-float); }
+  .toast.show { transform:translateY(0); opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+  <div class="shell-header">
+    <span class="role-badge">Central Unit</span>
+    <div class="shell-header-right">
+      <span class="conn-status"><span class="status-dot"></span>Connected</span>
+      <a class="exit-device-btn" href="device-scan.html" title="Exit device"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a>
+    </div>
+  </div>
+  <div class="screen-title-row">
+    <button class="back-btn" onclick="window.location.href='expansion-boards-settings.html'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="screen-title-text">W2</span>
+  </div>
+
+  <div class="board-meta">
+    <div class="board-meta-line">Desc: 2 Wiegand ports</div>
+    <div class="board-meta-line">Serial: W2B-0021-7743</div>
+  </div>
+
+  <div class="content">
+    <div class="section-card" id="port-1"></div>
+    <div class="section-card" id="port-2"></div>
+  </div>
+
+  <div class="save-all-bar" id="save-all-bar">
+    <span class="save-all-text">Unsaved changes</span>
+    <button class="btn-save" id="save-all-btn" disabled onclick="trySaveAll()">
+      <span class="spinner"></span><span>Save All</span>
+    </button>
+  </div>
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+const READERS = ['Wiegand 4','Wiegand 8','Wiegand 26 Standard','Wiegand 26 H10301','Wiegand 32','Wiegand 34 Fac 1 Byte','Wiegand 34 Fac 2 Byte','Wiegand 35 Corporate 1000','Wiegand 36','Wiegand 37 H10302','Wiegand 37 H10304','Wiegand 42','Wiegand 48 Corporate 1000','RAW'];
+function portHtml(n){
+  return `
+    <div class="section-title" style="margin-bottom:var(--space-4);">Wiegand Port ${n}</div>
+    <div class="field-group">
+      <label class="field-label">Reader Type</label>
+      <select class="field-select-full" id="reader-${n}" onchange="markDirty()">
+        ${READERS.map((r,i)=>`<option${i===2?' selected':''}>${r}</option>`).join('')}
+      </select>
+    </div>
+    <div class="toggle-row">
+      <div class="field-text"><div class="field-label">Manual Timing</div><div class="field-helper" style="margin-top:var(--space-1);">Set exact Pulse/Interpulse widths instead of using the Reader Type preset's built-in timing.</div></div>
+      <label class="switch"><input type="checkbox" onchange="setManualTiming(${n}, this.checked)"><span class="track"><span class="thumb"></span></span></label>
+    </div>
+    <div class="manual-timing-fields" id="manual-${n}">
+      <div class="field-group"><label class="field-label">Pulse (μs)</label><input class="field-input" value="100" oninput="markDirty()"></div>
+      <div class="field-group"><label class="field-label">Interpulse (μs)</label><input class="field-input" value="1000" oninput="markDirty()"></div>
+    </div>`;
+}
+document.getElementById('port-1').innerHTML = portHtml(1);
+document.getElementById('port-2').innerHTML = portHtml(2);
+
+let dirty = false;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+function updateSaveAllBar(){
+  document.getElementById('save-all-bar').classList.toggle('show', dirty);
+  document.getElementById('save-all-btn').disabled = !dirty;
+  document.querySelector('.content').style.paddingBottom = dirty ? '96px' : '24px';
+}
+function markDirty(){ dirty = true; updateSaveAllBar(); }
+function setManualTiming(n, on){
+  document.getElementById('reader-' + n).disabled = on;
+  document.getElementById('manual-' + n).classList.toggle('show', on);
+  markDirty();
+}
+function trySaveAll(){
+  const btn = document.getElementById('save-all-btn');
+  if(btn.disabled) return;
+  btn.classList.add('loading'); btn.disabled = true;
+  setTimeout(()=>{ btn.classList.remove('loading'); dirty = false; updateSaveAllBar(); toast('Saved'); }, 900);
+}
+
+function enhanceSelects(){
+  document.querySelectorAll('select.field-select-full:not(.ww-select-native)').forEach(function(sel){
+    sel.classList.remove('field-select-full');
+    sel.classList.add('ww-select-native');
+    const wrap = document.createElement('div');
+    wrap.className = 'ww-select';
+    sel.parentNode.insertBefore(wrap, sel);
+    wrap.appendChild(sel);
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'field-select-full ww-select-trigger';
+    trigger.innerHTML = '<span class="ww-select-value"></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+    wrap.appendChild(trigger);
+    const panel = document.createElement('div');
+    panel.className = 'ww-select-panel';
+    wrap.appendChild(panel);
+    function renderOptions(){
+      panel.innerHTML = '';
+      Array.from(sel.options).forEach(function(opt){
+        const row = document.createElement('div');
+        row.className = 'ww-select-option' + (opt.selected ? ' selected' : '');
+        row.textContent = opt.textContent;
+        row.onclick = function(){ sel.value = opt.value; sel.dispatchEvent(new Event('change', {bubbles:true})); wrap.classList.remove('open'); };
+        panel.appendChild(row);
+      });
+    }
+    function syncTrigger(){
+      const opt = sel.options[sel.selectedIndex];
+      trigger.querySelector('.ww-select-value').textContent = opt ? opt.textContent:'';
+      wrap.classList.toggle('disabled', sel.disabled);
+      renderOptions();
+    }
+    trigger.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(sel.disabled) return;
+      document.querySelectorAll('.ww-select.open').forEach(function(w){ if(w!==wrap) w.classList.remove('open'); });
+      wrap.classList.toggle('open');
+    });
+    sel.addEventListener('change', syncTrigger);
+    new MutationObserver(syncTrigger).observe(sel, {attributes:true, attributeFilter:['disabled']});
+    syncTrigger();
+  });
+}
+document.addEventListener('click', function(e){
+  document.querySelectorAll('.ww-select.open').forEach(function(w){ if(!w.contains(e.target)) w.classList.remove('open'); });
+});
+enhanceSelects();
+</script>
+
+</body>
+</html>

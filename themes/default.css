@@ -1,50 +1,164 @@
-/* WW BlueCon — shared sketch theme
-   Sourced from lib/main.dart's WwBlueConApp theme + SCREENS.md's Shared Design System table.
-   Do not invent new colors/fonts here — this IS the locked app theme, not a fresh palette. */
+/* WW BlueCon — design tokens. THE single source of every color, type size, spacing step,
+   radius and shadow used by the flat-ui mockups (and, 1:1, by lib/core/theme/app_theme.dart).
+
+   Budget (best-practice sizes — do not grow without removing something):
+     colors 21 · type sizes 6 · spacing steps 7 · radii 4 · shadows 4
+
+   Rules
+   - Screens never hard-code a color, size, spacing, radius or shadow: they use var(--…).
+   - Translucent tints are derived with color-mix() from these tokens, not added as new colors.
+   - Name tokens by role, not by look. Dark overrides the same names (keep both dark blocks in sync). */
 
 :root {
-  /* Colors */
-  --color-bg: #F4F5F7;
-  --color-surface: #FFFFFF;
-  --color-border: #E7E9EC;
+  color-scheme: light;
+
+  /* ── Neutrals (5) ─────────────────────────────────────────── */
+  --color-bg: #F4F5F7;            /* screen background */
+  --color-surface: #FFFFFF;       /* cards, inputs, sheets */
+  --color-fill: #EEF0F2;          /* quiet fill: tiles, tracks, tags, hover */
+  --color-border: #E7E9EC;        /* hairlines, input borders */
+  --color-border-strong: #C1C5CC; /* dashed empty slots, disabled controls */
+
+  /* ── Text (2) ─────────────────────────────────────────────── */
   --color-text: #1B2430;
-  --color-text-muted: rgba(27, 36, 48, 0.68);
-  --color-text-faint: rgba(27, 36, 48, 0.65);
+  --color-text-muted: rgba(27, 36, 48, 0.68);   /* secondary, helper, locked */
 
-  --color-primary: #1B2430;       /* primary buttons, key status text, active nav/role badge */
-  --color-primary-hover: #0F151D;
-  --color-accent: #3E7BFA;        /* link/info, secondary/outlined button borders */
-  --color-danger: #D34247;        /* errors, validation failures */
-  --color-success: #2BA23E;       /* "Saved" confirmations */
-  --color-locked: rgba(0, 0, 0, 0.38); /* mutual-exclusivity-locked fields — never red */
-
-  --color-danger-bg: #FDECEC;
-  --color-success-bg: #E9F8EC;
+  /* ── Brand (4) ────────────────────────────────────────────── */
+  --color-primary: #1B2430;       /* primary buttons, active nav, role badge */
+  --color-on-primary: #FFFFFF;    /* text/icons on any solid color */
+  --color-accent: #3E7BFA;        /* links, info, selection */
   --color-accent-bg: #EAF1FF;
 
-  /* Typography — platform default stack stands in for Roboto/San Francisco */
+  /* ── Status (9): solid · tinted background · readable text ── */
+  --color-danger: #D34247;
+  --color-danger-bg: #FDECEC;
+  --color-danger-text: #A62328;
+  --color-success: #2BA23E;
+  --color-success-bg: #E9F8EC;
+  --color-success-text: #1C7F2C;
+  --color-warning: #D98A2B;
+  --color-warning-bg: #FBEFDD;
+  --color-warning-text: #9A5A12;
+
+  /* ── Media (1) ────────────────────────────────────────────── */
+  --color-viewfinder: #14181F;    /* QR scanner panel — dark in both themes */
+
+  /* ── Type scale (6) ───────────────────────────────────────── */
   --font-sans: Arial, "Helvetica Neue", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --text-xs: 11px;       /* tab labels, card headings, captions */
+  --text-sm: 13px;       /* field labels, helper text, secondary rows (w500) */
+  --text-md: 15px;       /* body, inputs, buttons (w400/w600) */
+  --text-lg: 17px;       /* section titles (w700) */
+  --text-xl: 20px;       /* screen titles (w600) */
+  --text-2xl: 32px;      /* display (w700) */
 
-  --text-display: 32px;  /* w700 */
-  --text-heading: 20px;  /* w600 */
-  --text-body: 15px;     /* w400 */
-  --text-label: 13px;    /* w500 */
+  /* ── Spacing — 4px grid (7) ───────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
 
-  /* Spacing — 4px grid */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
-  --space-3xl: 64px;
+  /* ── Radii (4) ────────────────────────────────────────────── */
+  --radius-sm: 8px;      /* tags, chips, list options, inner thumbs */
+  --radius-md: 12px;     /* buttons, inputs, small cards, segmented tracks */
+  --radius-lg: 20px;     /* cards, sheets */
+  --radius-pill: 999px;  /* pills, switches, thin bars */
 
-  /* Shapes */
-  --radius-card: 20px;
-  --radius-sm: 12px;
-  --radius-pill: 999px;
+  /* ── Elevation (4) ────────────────────────────────────────── */
+  --shadow-xs: 0 1px 3px rgba(27, 36, 48, 0.2);     /* switch / segmented thumbs */
+  --shadow-sm: 0 6px 16px rgba(27, 36, 48, 0.05);   /* cards */
+  --shadow-md: 0 16px 32px rgba(27, 36, 48, 0.06);  /* raised surfaces, dropdowns */
+  --shadow-float: 0 12px 28px rgba(27, 36, 48, 0.18); /* floating bars, toasts */
 
-  /* Shadows */
-  --shadow-card: 0 16px 32px rgba(27, 36, 48, 0.06);
-  --shadow-card-sm: 0 6px 16px rgba(27, 36, 48, 0.05);
+  /* ── Mockup-only chrome (the phone frame; not part of the app) ── */
+  --chrome-stage: #DDE1E6;
+  --chrome-frame: #15181D;
+  --chrome-edge: #2A2E35;
+  --chrome-shadow: rgba(10, 14, 20, 0.35);
+  --chrome-radius: 36px;
 }
+
+/* ── Dark — same names, same roles. Keep the two blocks identical. ── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #0B0F14;
+  --color-surface: #171C24;
+  --color-fill: #0F141B;
+  --color-border: #2A3340;
+  --color-border-strong: #44505F;
+
+  --color-text: #E8ECF1;
+  --color-text-muted: rgba(232, 236, 241, 0.68);
+
+  --color-primary: #E8ECF1;
+  --color-on-primary: #0F1319;
+  --color-accent: #6B9BFF;
+  --color-accent-bg: rgba(107, 155, 255, 0.16);
+
+  --color-danger: #FF6B70;
+  --color-danger-bg: rgba(255, 107, 112, 0.14);
+  --color-danger-text: #FF9A9E;
+  --color-success: #4CC764;
+  --color-success-bg: rgba(76, 199, 100, 0.14);
+  --color-success-text: #7BDB8E;
+  --color-warning: #F0A64A;
+  --color-warning-bg: rgba(240, 166, 74, 0.14);
+  --color-warning-text: #F3C27C;
+
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 6px 16px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 16px 32px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 12px 28px rgba(0, 0, 0, 0.55);
+
+  --chrome-stage: #0A0D12;
+  --chrome-frame: #05070A;
+  --chrome-shadow: rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --color-bg: #0B0F14;
+    --color-surface: #171C24;
+    --color-fill: #0F141B;
+    --color-border: #2A3340;
+    --color-border-strong: #44505F;
+
+    --color-text: #E8ECF1;
+    --color-text-muted: rgba(232, 236, 241, 0.68);
+
+    --color-primary: #E8ECF1;
+    --color-on-primary: #0F1319;
+    --color-accent: #6B9BFF;
+    --color-accent-bg: rgba(107, 155, 255, 0.16);
+
+    --color-danger: #FF6B70;
+    --color-danger-bg: rgba(255, 107, 112, 0.14);
+    --color-danger-text: #FF9A9E;
+    --color-success: #4CC764;
+    --color-success-bg: rgba(76, 199, 100, 0.14);
+    --color-success-text: #7BDB8E;
+    --color-warning: #F0A64A;
+    --color-warning-bg: rgba(240, 166, 74, 0.14);
+    --color-warning-text: #F3C27C;
+
+    --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 6px 16px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 16px 32px rgba(0, 0, 0, 0.4);
+    --shadow-float: 0 12px 28px rgba(0, 0, 0, 0.55);
+
+    --chrome-stage: #0A0D12;
+    --chrome-frame: #05070A;
+    --chrome-shadow: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Mockup helper: theme switch (themes/theme.js adds the button). */
+.theme-switch { position: fixed; top: 10px; right: 10px; z-index: 10000; display: flex; gap: 2px; padding: 3px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); }
+.theme-switch button { appearance: none; border: none; background: transparent; color: var(--color-text-muted); font: 600 var(--text-xs)/1 var(--font-sans); padding: 6px 10px; border-radius: var(--radius-pill); cursor: pointer; }
+.theme-switch button.active { background: var(--color-primary); color: var(--color-on-primary); }

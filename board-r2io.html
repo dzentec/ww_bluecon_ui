@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — R2IO Settings</title>
+<link rel="stylesheet" href="themes/default.css">
+<script src="themes/theme.js"></script>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:var(--font-sans); background:var(--chrome-stage); color:var(--color-text); padding:var(--space-12) var(--space-4) var(--space-12); }
+  button { font-family:var(--font-sans); }
+
+  .phone { width:375px; margin:0 auto; background:var(--color-bg); border-radius:var(--chrome-radius); box-shadow:0 30px 60px var(--chrome-shadow), 0 0 0 10px var(--chrome-frame), 0 0 0 11px var(--chrome-edge); overflow:hidden; height:760px; display:flex; flex-direction:column; position:relative; }
+  .status-ios { height:28px; display:flex; align-items:center; justify-content:space-between; padding:0 var(--space-6); font-size:var(--text-sm); font-weight:600; color:var(--color-text); flex-shrink:0; }
+
+  .shell-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-3) var(--space-4) var(--space-2); flex-shrink:0; }
+  .role-badge { background:var(--color-primary); color:var(--color-on-primary); font-size:var(--text-sm); font-weight:600; padding:var(--space-1) var(--space-3); border-radius:var(--radius-pill); }
+  .conn-status { display:flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); font-weight:500; color:var(--color-success-text); }
+  .conn-status .status-dot { width:7px; height:7px; border-radius:50%; background:var(--color-success); flex-shrink:0; }
+  .shell-header-right { display:flex; align-items:center; gap:var(--space-3); }
+  .exit-device-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; color:var(--color-text-muted); text-decoration:none; flex-shrink:0; }
+  .exit-device-btn:hover { background:var(--color-fill); color:var(--color-text); }
+
+  .screen-title-row { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4) var(--space-3); flex-shrink:0; }
+  .back-btn { appearance:none; border:none; background:none; color:var(--color-text); cursor:pointer; padding:2px; display:flex; flex-shrink:0; }
+  .screen-title-text { font-size:var(--text-xl); font-weight:600; }
+
+  .board-meta { margin:0 var(--space-6) var(--space-4); }
+  .board-meta-line { font-size:var(--text-sm); color:var(--color-text-muted); line-height:1.5; }
+
+  .content { flex:1; overflow-y:auto; padding-bottom:var(--space-6); }
+
+  .section-card { background:var(--color-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); margin:0 var(--space-6) var(--space-4); padding:var(--space-4); }
+  .section-title { font-size:var(--text-lg); font-weight:700; color:var(--color-text); margin-bottom:var(--space-2); }
+  .section-intro { font-size:var(--text-sm); color:var(--color-text-muted); line-height:1.5; margin-bottom:var(--space-4); }
+  .subsection-divider { height:1px; background:var(--color-border); margin:var(--space-4) 0; }
+  .subsection-heading { font-size:var(--text-sm); font-weight:600; color:var(--color-text); margin-bottom:var(--space-3); }
+
+  .preset-table { width:100%; border-collapse:collapse; border:1px solid var(--color-border); border-radius:var(--radius-md); overflow:hidden; }
+  .preset-table th { background:var(--color-fill); font-size:var(--text-xs); font-weight:600; color:var(--color-text); text-align:left; padding:var(--space-2) var(--space-3); }
+  .preset-table th b { font-weight:700; }
+  .preset-table td { font-size:var(--text-sm); color:var(--color-text); padding:var(--space-2) var(--space-3); border-top:1px solid var(--color-border); }
+
+  .io-port-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-3); }
+  .io-seg { display:flex; background:var(--color-fill); border-radius:var(--radius-md); padding:var(--space-1); width:192px; height:40px; flex-shrink:0; }
+  .io-seg.locked { opacity:0.5; pointer-events:none; }
+  .io-seg button { flex:1; appearance:none; border:none; background:transparent; color:var(--color-text-muted); font-size:var(--text-md); font-weight:600; padding:0 2px; border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s ease; }
+  .io-seg button.active { background:var(--color-surface); color:var(--color-primary); box-shadow:var(--shadow-sm); }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+  <div class="shell-header">
+    <span class="role-badge">Central Unit</span>
+    <div class="shell-header-right">
+      <span class="conn-status"><span class="status-dot"></span>Connected</span>
+      <a class="exit-device-btn" href="device-scan.html" title="Exit device"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a>
+    </div>
+  </div>
+  <div class="screen-title-row">
+    <button class="back-btn" onclick="window.location.href='expansion-boards-settings.html'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="screen-title-text">R2IO</span>
+  </div>
+
+  <div class="board-meta">
+    <div class="board-meta-line">Desc: 2 Inputs &amp; 2 Relay out</div>
+    <div class="board-meta-line">Serial: R2IOB-0237-7743</div>
+  </div>
+
+  <div class="content">
+    <div class="section-card">
+      <div class="section-title">Basic Preset</div>
+      <div class="section-intro">Activating input IN1 on the REMOTE unit causes RELAY 1 on the CENTRAL unit to activate.</div>
+      <table class="preset-table">
+        <thead>
+          <tr><th>R2IO <b>CENTRAL</b></th><th>R2IO <b>REMOTE</b></th></tr>
+        </thead>
+        <tbody>
+          <tr><td>IN 1</td><td>RELAY 1</td></tr>
+          <tr><td>IN 2</td><td>RELAY 2</td></tr>
+          <tr><td>RELAY 1</td><td>IN 1</td></tr>
+          <tr><td>RELAY 2</td><td>IN 2</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title" style="margin-bottom:var(--space-4);">Relay Failsafe</div>
+      <div class="section-intro" id="locked-note" style="display:none;font-style:italic;font-size:var(--text-xs);line-height:1.4;">Set by Global Relay Failsafe (Expansion Boards) — it applies to every relay on the connected boards.</div>
+      <div class="subsection-heading">Relay 3 (R2IO)</div>
+      <div class="io-port-head" style="margin-bottom:var(--space-2);">
+        <span style="font-size:var(--text-sm);color:var(--color-text-muted);font-weight:500;">On Power Loss</span>
+        <div class="io-seg">
+          <button type="button" class="active" onclick="setBoardRelay(event)">Fail Secure</button>
+          <button type="button" onclick="setBoardRelay(event)">Fail Safe</button>
+        </div>
+      </div>
+      <div class="io-port-head">
+        <span style="font-size:var(--text-sm);color:var(--color-text-muted);font-weight:500;">On Radio-Link Loss</span>
+        <div class="io-seg">
+          <button type="button" class="active" onclick="setBoardRelay(event)">Fail Secure</button>
+          <button type="button" onclick="setBoardRelay(event)">Fail Safe</button>
+        </div>
+      </div>
+      <div class="subsection-divider"></div>
+      <div class="subsection-heading">Relay 4 (R2IO)</div>
+      <div class="io-port-head" style="margin-bottom:var(--space-2);">
+        <span style="font-size:var(--text-sm);color:var(--color-text-muted);font-weight:500;">On Power Loss</span>
+        <div class="io-seg">
+          <button type="button" onclick="setBoardRelay(event)">Fail Secure</button>
+          <button type="button" class="active" onclick="setBoardRelay(event)">Fail Safe</button>
+        </div>
+      </div>
+      <div class="io-port-head">
+        <span style="font-size:var(--text-sm);color:var(--color-text-muted);font-weight:500;">On Radio-Link Loss</span>
+        <div class="io-seg">
+          <button type="button" onclick="setBoardRelay(event)">Fail Secure</button>
+          <button type="button" class="active" onclick="setBoardRelay(event)">Fail Safe</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function setBoardRelay(evt){
+  const btn = evt.currentTarget;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+// Hard link: while Global Relay Failsafe (Expansion Boards) is on, Relay 3/4 show its values and are locked.
+(function(){
+  let g = {enabled:true, pl:'secure', rl:'secure'};
+  try { g = Object.assign(g, JSON.parse(localStorage.getItem('wwGlobal')||'{}')); } catch(e) {}
+  if(!g.enabled) return;
+  document.getElementById('locked-note').style.display = 'block';
+  document.querySelectorAll('.io-seg').forEach(function(seg, i){
+    const mode = i % 2 === 0 ? g.pl:g.rl;
+    seg.classList.add('locked');
+    seg.querySelectorAll('button').forEach((b, k)=>b.classList.toggle('active', (k===1)===(mode==='safe')));
+  });
+})();
+</script>
+</body>
+</html>

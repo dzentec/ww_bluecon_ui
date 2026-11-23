@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WW BlueCon — Add Expansion Board</title>
+<link rel="stylesheet" href="themes/default.css">
+<script src="themes/theme.js"></script>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:var(--font-sans); background:var(--chrome-stage); color:var(--color-text); padding:var(--space-12) var(--space-4) var(--space-12); }
+  button, select, input { font-family:var(--font-sans); }
+
+  .phone { width:375px; margin:0 auto; background:var(--color-bg); border-radius:var(--chrome-radius); box-shadow:0 30px 60px var(--chrome-shadow), 0 0 0 10px var(--chrome-frame), 0 0 0 11px var(--chrome-edge); overflow:hidden; height:760px; display:flex; flex-direction:column; position:relative; }
+  .status-ios { height:28px; display:flex; align-items:center; justify-content:space-between; padding:0 var(--space-6); font-size:var(--text-sm); font-weight:600; color:var(--color-text); flex-shrink:0; }
+
+  .shell-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-3) var(--space-4) var(--space-2); flex-shrink:0; }
+  .role-badge { background:var(--color-primary); color:var(--color-on-primary); font-size:var(--text-sm); font-weight:600; padding:var(--space-1) var(--space-3); border-radius:var(--radius-pill); }
+  .conn-status { display:flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); font-weight:500; color:var(--color-success-text); }
+  .conn-status .status-dot { width:7px; height:7px; border-radius:50%; background:var(--color-success); flex-shrink:0; }
+  .shell-header-right { display:flex; align-items:center; gap:var(--space-3); }
+  .exit-device-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; color:var(--color-text-muted); text-decoration:none; flex-shrink:0; }
+  .exit-device-btn:hover { background:var(--color-fill); color:var(--color-text); }
+
+  .screen-title-row { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4) var(--space-3); flex-shrink:0; }
+  .back-btn { appearance:none; border:none; background:none; color:var(--color-text); cursor:pointer; padding:2px; display:flex; flex-shrink:0; }
+  .screen-title-text { font-size:var(--text-xl); font-weight:600; }
+
+  .content { flex:1; overflow-y:auto; padding-bottom:var(--space-6); position:relative; }
+
+  .bullets-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-2) var(--space-3); margin:0 var(--space-6) var(--space-4); font-size:var(--text-sm); color:var(--color-text-muted); }
+  .bullets-grid div::before { content:"• "; }
+
+  .board-row { position:relative; display:flex; align-items:center; gap:var(--space-1); padding:var(--space-3) var(--space-8) var(--space-3) var(--space-4); background:var(--color-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); margin:0 var(--space-6) var(--space-6); }
+  .board-name { font-size:var(--text-lg); font-weight:700; color:var(--color-text); width:58px; flex-shrink:0; }
+  .board-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:var(--space-1); }
+  .board-desc { font-size:var(--text-sm); color:var(--color-text-muted); }
+  .board-serial { font-size:var(--text-sm); color:var(--color-text-muted); }
+  /* Status dot sits at the card's top-right corner, not centered with the row — matches the design exactly. */
+  .board-dot { position:absolute; top:12px; right:14px; width:8px; height:8px; border-radius:50%; background:var(--color-success); flex-shrink:0; }
+  .board-dot.pending { background:var(--color-warning); }
+
+  .board-slot-empty { position:relative; border:1px dashed var(--color-border-strong); border-radius:var(--radius-lg); margin:0 var(--space-6) var(--space-6); height:55px; }
+  .board-slot-empty .slot-dot { position:absolute; top:12px; right:14px; width:8px; height:8px; border-radius:50%; border:1px solid var(--color-border-strong); }
+
+  .scan-footer { flex-shrink:0; text-align:center; padding:var(--space-3) var(--space-6) var(--space-4); }
+  .scan-hint { font-size:var(--text-sm); color:var(--color-text-muted); font-style:italic; line-height:1.5; margin-bottom:var(--space-3); }
+  .btn-scan { appearance:none; border:none; width:calc(100% - 32px); margin:0 var(--space-4); background:var(--color-primary); color:var(--color-on-primary); font-size:var(--text-md); font-weight:600; padding:var(--space-4); border-radius:var(--radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:var(--space-2); }
+  .btn-scan:disabled { background:var(--color-border-strong); cursor:not-allowed; }
+  .btn-scan .spinner { display:none; width:15px; height:15px; border-radius:50%; border:2px solid color-mix(in srgb, var(--color-on-primary) 35%, transparent); border-top-color:var(--color-on-primary); animation:spin 0.8s linear infinite; }
+  .btn-scan.loading .spinner { display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .toast { position:absolute; left:16px; right:16px; bottom:18px; background:var(--color-primary); color:var(--color-on-primary); padding:var(--space-3) var(--space-4); border-radius:var(--radius-md); font-size:var(--text-sm); font-weight:500; transform:translateY(40px); opacity:0; pointer-events:none; transition:all 0.25s ease; z-index:50; box-shadow:var(--shadow-float); }
+  .toast.show { transform:translateY(0); opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="status-ios"><span>9:41</span><span>●●●●  5G  🔋</span></div>
+  <div class="shell-header">
+    <span class="role-badge">Central Unit</span>
+    <div class="shell-header-right">
+      <span class="conn-status"><span class="status-dot"></span>Connected</span>
+      <a class="exit-device-btn" href="device-scan.html" title="Exit device"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a>
+    </div>
+  </div>
+  <div class="screen-title-row">
+    <button class="back-btn" onclick="window.location.href='home.html'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="screen-title-text">Expansion Boards</span>
+  </div>
+
+  <div class="content">
+    <div class="bullets-grid">
+      <div>Plug and Play connection</div><div>Up to 4 boards</div>
+      <div>Passthrough connection</div><div>Up to 32 Relays in total</div>
+    </div>
+
+    <div id="board-list"></div>
+  </div>
+
+  <div class="scan-footer">
+    <div class="scan-hint">Connect board directly to Central or Remote unit and Press Scan Bus</div>
+    <button class="btn-scan" id="scan-btn" onclick="scanOrSave()">
+      <span class="spinner"></span><span id="scan-btn-label">Scan Bus</span>
+    </button>
+  </div>
+
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+let boards = [
+  { name:'W2', desc: 'Desc: 2 Wiegand ports', serial: 'Serial: W2B-0021-7743', status: 'online' },
+  { name:'R2IO', desc: 'Desc: 2 Inputs & 2 Relay out', serial: 'Serial: R2IOB-0237-7743', status: 'online' },
+];
+const MAX_BOARDS = 4;
+let pendingSlot = null;
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
+function renderBoards(){
+  const list = document.getElementById('board-list');
+  let html = boards.map(b => `
+    <div class="board-row">
+      <div class="board-name">${b.name}</div>
+      <div class="board-info"><div class="board-desc">${b.desc}</div><div class="board-serial">${b.serial}</div></div>
+      <div class="board-dot${b.status === 'pending' ? ' pending' : ''}"></div>
+    </div>`).join('');
+  for(let i = boards.length; i < MAX_BOARDS; i++){
+    html += `<div class="board-slot-empty"><span class="slot-dot"></span></div>`;
+  }
+  list.innerHTML = html;
+
+  const btn = document.getElementById('scan-btn');
+  const label = document.getElementById('scan-btn-label');
+  if(pendingSlot !== null){
+    label.textContent = 'Save';
+    btn.disabled = false;
+  } else if(boards.length >= MAX_BOARDS){
+    label.textContent = 'Scan Bus';
+    btn.disabled = true;
+  } else {
+    label.textContent = 'Scan Bus';
+    btn.disabled = false;
+  }
+}
+
+function scanOrSave(){
+  const btn = document.getElementById('scan-btn');
+  if(pendingSlot !== null){
+    boards[pendingSlot].status = 'online';
+    pendingSlot = null;
+    renderBoards();
+    toast('Board saved');
+    return;
+  }
+  btn.classList.add('loading');
+  btn.disabled = true;
+  setTimeout(()=>{
+    btn.classList.remove('loading');
+    boards.push({ name:'R2IO', desc: 'Desc: 2 Inputs & 2 Relay out', serial: 'Serial: R2IOB-00' + (48 + boards.length) + '-7743', status: 'pending' });
+    pendingSlot = boards.length - 1;
+    renderBoards();
+    toast('New board detected');
+  }, 1100);
+}
+
+renderBoards();
+</script>
+</body>
+</html>
